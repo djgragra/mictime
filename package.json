@@ -1,6 +1,6 @@
 {
   "name": "mictime",
-  "version": "26.10.1",
+  "version": "0.1.0",
   "description": "Talk timer for live radio: a signal (MIDI, key or audio level) starts the count, the next one stops it, the total stays on screen, then it returns to zero",
   "main": "main.js",
   "type": "module",
@@ -26,17 +26,39 @@
     "appId": "com.onairgarage.mictime",
     "productName": "MicTime",
     "publish": null,
-    "files": ["main.js", "preload.cjs", "src/**/*", "renderer/**/*", "assets/**/*", "CHANGELOG.md", "package.json"],
-    "directories": { "output": "release", "buildResources": "assets" },
-    "win": { "target": "nsis", "icon": "assets/icon.ico" },
+    "files": [
+      "main.js",
+      "preload.cjs",
+      "src/**/*",
+      "renderer/**/*",
+      "assets/**/*",
+      "CHANGELOG.md",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release",
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
     "mac": {
       "target": "dmg",
       "icon": "assets/icon.icns",
       "category": "public.app-category.utilities",
       "artifactName": "MicTime-${version}-${arch}.${ext}",
-      "extendInfo": { "NSMicrophoneUsageDescription": "MicTime reads the level of the input you choose to start and stop the timer. It never records or stores audio." }
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "MicTime reads the level of the input you choose to start and stop the timer. It never records or stores audio."
+      }
     },
-    "linux": { "target": ["AppImage"], "icon": "assets/linux-icons", "category": "AudioVideo" },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "assets/linux-icons",
+      "category": "AudioVideo"
+    },
     "nsis": {
       "artifactName": "MicTime-Setup-${version}.exe",
       "oneClick": false,
@@ -52,5 +74,8 @@
       "installerHeaderIcon": "assets/icon.ico"
     }
   },
-  "repository": { "type": "git", "url": "git+https://github.com/djgragra/mictime.git" }
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/djgragra/mictime.git"
+  }
 }

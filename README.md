@@ -40,6 +40,10 @@ The screenshots use made-up data (a made-up device name, made-up message numbers
 
 MicTime contacts only `api.github.com` / `github.com`, to check for a new release (can be turned off in Settings → Updates). MIDI, keys and the audio level are read on this computer only. The window has no network access at all. No accounts, no analytics, no telemetry. The audio level needs the microphone permission of the system; the audio is never recorded or sent.
 
+## Versions
+
+Public releases are numbered `YY.M.N` (year, month, number: `26.10.1`). Betas are `0.N.P` (`0.1.0`, `0.1.1`…) and are published as GitHub pre-releases, so the update check never offers them; any public release is newer than every beta.
+
 ## Install
 
 Download the installer for your system from the [Releases](https://github.com/djgragra/mictime/releases) page and check it against `SHA256SUMS.txt`. Installers: `MicTime-Setup-<V>.exe`, `MicTime-<V>-arm64.dmg`, `MicTime-<V>-x64.dmg`, `MicTime-<V>.AppImage`.
@@ -75,7 +79,7 @@ The app is free and **not code-signed**, so the first launch may show a warning:
 
 | Reference | What it validates | Result | How to re-run |
 |---|---|---|---|
-| Unit tests (`dev/*.test.mjs`) | message parsing, learn, matching, the toggle / separate / gate rules, keys, the audio gate, the timer (hold, debounce, reset), settings validation, backup, logs, support info, the guided update with a fake GitHub (hash mismatch, interrupted download, `.part` cleanup, safety copy), the three languages, packaging rules | 67 tests, all pass (Linux, Node 22) | `npm test` |
+| Unit tests (`dev/*.test.mjs`) | message parsing, learn, matching, the toggle / separate / gate rules, keys, the audio gate, the timer (hold, debounce, reset), settings validation, backup, logs, support info, the guided update with a fake GitHub (hash mismatch, interrupted download, `.part` cleanup, safety copy), the three languages, packaging rules | 68 tests, all pass (Linux, Node 22) | `npm test` |
 | End-to-end run (`dev/e2e.mjs`) on the real app | start-up with ES modules, timer through the button, MIDI messages (injected into the real handler), learn, keys with the window in front, global shortcuts registered with the system (registration only), the audio gate with Chromium's fake audio device, settings tabs, language and theme | all checks pass on **Linux x64, Electron under Xvfb**. The packaged Linux build (`electron-builder --linux --dir`, code inside `app.asar`) was also started once and loaded its pages and modules | `npm ci && node dev/e2e.mjs` (needs `xvfb-run` or a display) |
 
 ## Not validated

@@ -119,6 +119,8 @@ jobs:
         with:
           files: dist/*
           generate_release_notes: true
+          # versions 0.N.P are betas: published as pre-releases, so the update check (releases/latest) never offers them
+          prerelease: ${{ startsWith(github.event.inputs.release_version, '0.') || startsWith(github.event.inputs.release_version, 'v0.') || (github.event.inputs.release_version == '' && startsWith(github.ref_name, 'v0.')) }}
           # tag pushed: its own name; started by hand: v<version>, created by GitHub on this commit
           tag_name: ${{ github.event.inputs.release_version != '' && format('v{0}', github.event.inputs.release_version) || github.ref_name }}
           target_commitish: ${{ github.sha }}

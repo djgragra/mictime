@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { whatsNew } from '../src/updater.js';
+import { whatsNew, isNewer } from '../src/updater.js';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const file = (...p) => path.join(root, ...p);
@@ -28,7 +28,6 @@ test('installer names follow the standard', () => {
   assert.equal(pkg.build.productName, 'MicTime');
   assert.equal(pkg.build.nsis.artifactName, 'MicTime-Setup-${version}.exe');
   assert.equal(pkg.build.mac.artifactName, 'MicTime-${version}-${arch}.${ext}');
-  assert.match(pkg.version, /^\d{2}\.\d{1,2}\.\d+$/);
   assert.equal(pkg.scripts.test, 'node --test dev/*.test.mjs');
 });
 
@@ -82,4 +81,10 @@ test('audio: the analyser is not connected to an output and nothing is recorded'
 
 test('docs exist: manual and MIDI specification', () => {
   for (const f of ['README.md', 'CHANGELOG.md', 'LICENSE', 'docs/MANUAL.md', 'docs/MIDI-SPEC.md']) assert.ok(fs.existsSync(file(f)), f);
+});
+
+test('versions: a beta is 0.N.P and published as a pre-release; any public YY.M.N is newer than every beta', () => {
+  assert.match(pkg.version, /^(0\.\d+\.\d+|\d{2}\.\d{1,2}\.\d+)$/);
+  assert.ok(isNewer('26.10.1', '0.9.9') && !isNewer('0.9.9', '26.10.1') && isNewer('0.2.0', '0.1.9'));
+  assert.match(read('.github', 'workflows', 'build-installers.yml'), /prerelease: .*startsWith\(github\.event\.inputs\.release_version, '0\.'\)/);
 });

@@ -1,8 +1,10 @@
 # Changelog
 
-## 26.10.1 — 2026-10-16
+## 0.1.0 — 2026-10-16 (beta)
 
-- First release. MicTime is a **talk timer for live radio and events**: the first signal starts the count, the next one stops it, the total stays on screen for a few seconds (you choose how many) and the timer returns to zero. Very large figures, readable across a studio.
+Beta versions are numbered `0.N.P` and published as GitHub pre-releases, so nobody is offered them by the update check. The first public release will be numbered `YY.M.N` (the year and month it comes out) and will carry this list.
+
+- First version. MicTime is a **talk timer for live radio and events**: the first signal starts the count, the next one stops it, the total stays on screen for a few seconds (you choose how many) and the timer returns to zero. Very large figures, readable across a studio.
 - **MIDI**: pick the input, assign start / stop / reset to a **note, a controller (CC) or a program change** with **MIDI learn**, and watch the incoming messages in a monitor. Two modes: **one signal** (the same message starts and stops) and **two signals** (start and stop are different, or the same message with "on starts, off stops"). A value above 0 is on, 0 is off. The message format and connection examples are in `docs/MIDI-SPEC.md`.
 - **Keyboard**: a key or combination you choose, as a **global shortcut** that works with another program in front where the system allows it, and as a key with the window in front everywhere. If the system refuses a shortcut the app says so and keeps the window-only key.
 - **Audio level** (off by default): choose an input, a threshold and a hold time; the count starts when the level goes over the threshold and stops after it stays below for the hold time. Only the level is measured: nothing is recorded, saved or sent, and the sound is not played.
