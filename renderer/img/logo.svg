@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1b2030"/><stop offset="1" stop-color="#0b0d12"/></linearGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b8cff"/><stop offset="1" stop-color="#35c98f"/></linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <!-- timer ring: three quarters filled, the rest dim -->
+  <circle cx="512" cy="540" r="330" fill="none" stroke="#2a3040" stroke-width="56"/>
+  <path d="M 512 210 A 330 330 0 1 1 182 540" fill="none" stroke="url(#ring)" stroke-width="56" stroke-linecap="round"/>
+  <!-- microphone -->
+  <rect x="440" y="372" width="144" height="236" rx="72" fill="#f4f6fb"/>
+  <path d="M 396 540 A 116 116 0 0 0 628 540" fill="none" stroke="#f4f6fb" stroke-width="36" stroke-linecap="round"/>
+  <rect x="494" y="650" width="36" height="64" rx="10" fill="#f4f6fb"/>
+  <rect x="440" y="708" width="144" height="34" rx="17" fill="#f4f6fb"/>
+  <!-- on-air dot -->
+  <circle cx="800" cy="224" r="52" fill="#ef4444"/>
+</svg>

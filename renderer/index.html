@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; media-src 'self'; base-uri 'none'; form-action 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MicTime</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="phase-idle">
+  <div class="root">
+    <header>
+      <div class="brand"><img class="brand-mark" src="img/logo.svg" alt=""><span class="brand-name">MicTime</span></div>
+      <div class="hsp"></div>
+      <div id="pills" class="pills" role="status"></div>
+      <button id="btnSettings" class="hbtn" type="button" data-i18n-title="hdr.settings"><span class="ic ic-gear"></span></button>
+      <button id="btnFullscreen" class="hbtn" type="button" data-i18n-title="hdr.fullscreen"><span class="ic ic-full"></span></button>
+    </header>
+
+    <div id="updateBanner" class="update-banner" role="status" hidden></div>
+
+    <main class="stage">
+      <div id="stateLabel" class="state-label" data-i18n="phase.idle">READY</div>
+      <div id="digits" class="digits" role="timer" aria-live="off">00:00</div>
+      <div class="hold-bar" aria-hidden="true"><div id="holdFill" class="hold-fill"></div></div>
+      <div id="controls" class="controls">
+        <button id="btnStart" class="btn btn-main" type="button" data-i18n="ctl.start">START</button>
+        <button id="btnStop" class="btn" type="button" data-i18n="ctl.stop" hidden>STOP</button>
+        <button id="btnReset" class="btn ghost" type="button" data-i18n="ctl.reset">RESET</button>
+      </div>
+      <div id="hint" class="hint" hidden data-i18n="hint.noSignal"></div>
+    </main>
+  </div>
+
+  <div id="settings" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="panel">
+      <div class="panel-head">
+        <h2 id="settingsTitle" data-i18n="settings.title">Settings</h2>
+        <button id="btnCloseSettings" class="btn ghost compact" type="button" data-i18n="common.close">Close</button>
+      </div>
+      <nav id="tabs" class="tabs" role="tablist"></nav>
+      <div id="tabBody" class="tab-body"></div>
+    </div>
+  </div>
+
+  <div id="whatsNew" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="whatsNewTitle">
+    <div class="panel narrow">
+      <h2 id="whatsNewTitle"></h2>
+      <ul id="whatsNewList"></ul>
+      <div class="row-end"><button id="btnWhatsNewClose" class="btn btn-main" type="button" data-i18n="common.ok">OK</button></div>
+    </div>
+  </div>
+
+  <script src="js/util.js"></script>
+  <script src="js/i18n.js"></script>
+  <script src="js/updates.js"></script>
+  <script type="module" src="js/signals.js"></script>
+  <script type="module" src="js/settings.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
