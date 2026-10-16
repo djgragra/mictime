@@ -1,6 +1,6 @@
 # MicTime MIDI specification
 
-How to make a mixer, a piece of software or a button box start and stop MicTime. Version 1.1 (beta 0.2.0), 16 October 2026.
+How to make a mixer, a piece of software or a button box start and stop MicTime. Version 1.1, 16 October 2026.
 
 MicTime only **receives** MIDI. It never sends anything and never asks for system-exclusive access. Any source that can send one of
 the three messages below on a MIDI port the computer can see will work. You choose the message in *Settings → Signals → MIDI* with
