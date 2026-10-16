@@ -10,4 +10,4 @@ First public release. MicTime is a **talk timer for live radio, events and talks
 - **Backup** of the configuration (MIDI messages, keys, audio and timer settings, programs, colours, language, theme) with *Replace everything* or *Add only the missing*. No passwords or keys: the app uses none.
 - **Guided update** (download with progress, SHA-256 check, safety copy, *What's new*), **Help & About** with *Copy support info* and the logs folder, English, Italiano and Español, dark, light or follow the system, always on top and full screen.
 - The signal code is in `src/trigger`, independent of Electron, so other OnAir Garage apps can reuse it.
-- Thanks to Emanuele for the suggestion that gave the idea for this software.
+- Thanks to Emanuele of Radio Fresh for the suggestion that gave the idea for this software.
