@@ -139,6 +139,24 @@ try {
   await key('F6', 'F6');
   await key('F5', 'F5'); await key('F5', 'F5'); await key('F5', 'F5');
   check('"free" at the end: no limit and the program says so', (await text('stepLabel')) === 'End of the program: no limit', await text('stepLabel'));
+  // the single limit, with no program active
+  await set({ activeProgram: '', timer: { limitSeconds: 2, warnSeconds: 1, flashSeconds: 1, holdForever: false, holdSeconds: 2 } });
+  await sleep(200);
+  check('single limit: the line under the figures says so', (await text('stepNext')) === 'Limit 00:02', await text('stepNext'));
+  await key('F9', 'F9');
+  await sleep(1300);
+  check('single limit: warning colour near the limit', (await cls()).includes('lim-warn'), await cls());
+  await sleep(1000);
+  check('single limit: over colour past it', /lim-(over|flash)/.test(await cls()), await cls());
+  await key('F9', 'F9');
+  await sleep(200);
+  check('single limit: no step is armed or advanced (no program), the total stays red', (await cls()).includes('lim-over') && (await text('stepNext')) === 'Limit 00:02', `${await cls()} | ${await text('stepNext')}`);
+  await key('F10', 'F10');
+  await set({ timer: { limitSeconds: 0 } });
+  await sleep(150);
+  check('no program and no limit: nothing under the figures', (await text('stepNext')) === '' && (await text('stepLabel')) === '', `${await text('stepNext')}|${await text('stepLabel')}`);
+  await set({ activeProgram: 'show', timer: { warnSeconds: 2, flashSeconds: 1 } });
+
   // a console that sends two messages for one press must not skip a step
   await set({ programEnd: 'loop', timer: { debounceMs: 500 } });
   await ev('GC.program.set(0)');
@@ -178,6 +196,14 @@ try {
   check('chosen colours apply (counting green)', (await ev("getComputedStyle(document.getElementById('digits')).color")) === 'rgb(0, 255, 0)');
   await key('F10', 'F10');
   await set({ colors: { normal: '', idle: '' } });
+
+  // ---- Settings → Programs: the labels of the step table line up with the boxes ----
+  await set({ programs: [{ id: 'al', name: 'Align', steps: [{ name: 'One', sec: 60 }] }], activeProgram: 'al' });
+  await ev(`GC.settingsUi.open(); document.querySelectorAll('#tabs .tab-btn')[1].click()`);
+  await sleep(250);
+  const al = JSON.parse(await ev(`(() => { const head = [...document.querySelectorAll('.step-row.head span')]; const row = document.querySelector('.step-row:not(.head)'); const inputs = row.querySelectorAll('input'); const r = (e) => e.getBoundingClientRect(); return JSON.stringify({ name: [r(head[1]).left, r(inputs[0]).left], min: [r(head[2]).left, r(inputs[1]).left], sec: [r(head[3]).left, r(inputs[2]).left] }); })()`));
+  check('step table: "Name", "Minutes" and "Seconds" start where their boxes start', Object.values(al).every(([a, b]) => Math.abs(a - b) <= 2), JSON.stringify(al));
+  await ev(`document.getElementById('btnCloseSettings').click()`);
 
   // ---- "What's new" must fit the window and close ----
   await send('Emulation.setDeviceMetricsOverride', { width: 900, height: 480, deviceScaleFactor: 1, mobile: false });

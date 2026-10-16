@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2 — 2026-10-16 (beta)
+
+- **Single time limit**: a time limit that applies when no program is active (Settings → Programs → *Time limit, colours and warnings*, minutes and seconds; 00:00 = no limit). The colours, the warning and the blinking follow it exactly as they follow the step of a program, and the line under the figures says `Limit 01:00`. Until now a limit needed a program with one step.
+- **Fixed**: in the table of steps the headings "Minutes" and "Seconds" were not above their boxes. The columns now have fixed widths.
+- Tests: the single limit (settings, backup, colours in the real window) and the alignment of the step table are checked.
+
 ## 0.2.1 — 2026-10-16 (beta)
 
 - **Fixed: the "What's new" window could not be closed** when the list was taller than the window (the OK button was out of view). The list now scrolls, the title and the OK button stay in view, and the window also closes with `Esc`, `Enter` or a click outside it.

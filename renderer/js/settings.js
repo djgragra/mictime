@@ -273,6 +273,11 @@ function programsTab() {
       cur ? stepsEditor(cur, edit) : h('p', { class: 'hint', text: t('prog.noneHint') })),
     card(t('col.title'),
       h('p', { class: 'hint', text: t('col.intro') }),
+      row(t('lim.single'), h('div', { class: 'inline-row' },
+        h('input', { type: 'number', min: 0, max: 600, step: 1, value: Math.floor(s.timer.limitSeconds / 60), title: t('prog.minutes'), 'aria-label': t('prog.minutes'), onchange: (e) => save({ timer: { limitSeconds: Math.max(0, Math.round(Number(e.target.value)) || 0) * 60 + (S().timer.limitSeconds % 60) } }) }),
+        h('span', { class: 'mono', text: ':' }),
+        h('input', { type: 'number', min: 0, max: 59, step: 1, value: s.timer.limitSeconds % 60, title: t('prog.seconds'), 'aria-label': t('prog.seconds'), onchange: (e) => save({ timer: { limitSeconds: Math.floor(S().timer.limitSeconds / 60) * 60 + Math.min(59, Math.max(0, Math.round(Number(e.target.value)) || 0)) } }) }),
+        h('span', { class: 'hint inline', text: t('lim.minSec') })), t('lim.singleHint')),
       row(t('col.warnSec'), number(s.timer.warnSeconds, 0, 3600, 1, (n) => save({ timer: { warnSeconds: n } })), t('col.warnSecHint')),
       row(t('col.flashSec'), number(s.timer.flashSeconds, 0, 3600, 1, (n) => save({ timer: { flashSeconds: n } })), t('col.flashSecHint')),
       ...['normal', 'warn', 'over', 'idle'].map((k) => h('div', { class: 'color-row' },
@@ -291,7 +296,7 @@ function stepsEditor(cur, edit) {
   const idx = GC.program.index();
   const wrap = h('div', { class: 'steps' });
   const msg = h('div', { class: 'hint', text: t('prog.stepsHint') });
-  wrap.append(h('div', { class: 'step-row head' }, h('span'), h('span', { text: t('prog.stepName') }), h('span', { text: t('prog.minutes') }), h('span', { text: t('prog.seconds') })));
+  wrap.append(h('div', { class: 'step-row head' }, h('span'), h('span', { text: t('prog.stepName') }), h('span', { text: t('prog.minutes') }), h('span', { text: t('prog.seconds') }), h('span'), h('span'), h('span')));
   cur.steps.forEach((st, i) => {
     const mins = Math.floor(st.sec / 60);
     const secs = st.sec % 60;

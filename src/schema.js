@@ -26,6 +26,7 @@ export const LIMITS = {
   warnSeconds: [0, 3600],
   flashSeconds: [0, 3600],
   stepSeconds: [0, 36000], // 0 = no limit
+  limitSeconds: [0, 36000], // the single limit used when no program is active; 0 = no limit
   programs: 8,
   steps: 40,
   programName: 60,
@@ -43,6 +44,7 @@ export function defaults() {
       mode: 'toggle', // toggle: one signal starts and the next stops | separate: start and stop are different signals
       holdSeconds: 5, // the total stays on screen this long, then back to zero
       holdForever: false, // true: the total stays until the next start or a reset
+      limitSeconds: 0, // the time limit when no program is active (a program has a limit for each step); 0 = no limit
       debounceMs: 300, // a second start/stop within this time is taken as the same press
       warnSeconds: 10, // the figures turn to the warning colour this many seconds before the limit
       flashSeconds: 10 // and blink slowly when the limit is passed by this many seconds
@@ -122,6 +124,7 @@ export function sanitizeSettings(input, base = defaults()) {
       mode: oneOf(t.mode, ['toggle', 'separate'], 'toggle'),
       holdSeconds: clampInt(t.holdSeconds, LIMITS.holdSeconds, def.timer.holdSeconds),
       holdForever: bool(t.holdForever, false),
+      limitSeconds: clampInt(t.limitSeconds, LIMITS.limitSeconds, 0),
       debounceMs: clampInt(t.debounceMs, LIMITS.debounceMs, def.timer.debounceMs),
       warnSeconds: clampInt(t.warnSeconds, LIMITS.warnSeconds, def.timer.warnSeconds),
       flashSeconds: clampInt(t.flashSeconds, LIMITS.flashSeconds, def.timer.flashSeconds)
