@@ -52,7 +52,7 @@ test('shared modules carry their garage-common version line', () => {
   assert.equal(first('src', 'backup.js'), '// garage-common: backup 1');
   assert.equal(first('src', 'logs.js'), '// garage-common: logs 1');
   assert.equal(first('src', 'support.js'), '// garage-common: support 1');
-  for (const f of ['index', 'midi', 'keys', 'level', 'stopwatch']) assert.equal(first('src', 'trigger', `${f}.js`), '// garage-common: trigger 1', f);
+  for (const f of ['index', 'midi', 'keys', 'level', 'stopwatch']) assert.equal(first('src', 'trigger', `${f}.js`), '// garage-common: trigger 2', f);
 });
 
 test('src/trigger is independent of Electron and of the rest of the app (it is copied into other apps)', () => {

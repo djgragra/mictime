@@ -5,7 +5,7 @@ const GC = window.GC;
 const { h, $ } = GC;
 const t = (k, p) => GC.t(k, p);
 
-const TABS = ['general', 'signals', 'updates', 'backup', 'about'];
+const TABS = ['general', 'programs', 'signals', 'updates', 'backup', 'about'];
 let tab = 'general';
 let keyCapture = null; // { name, timer }
 let learning = ''; // binding name being learned
@@ -31,7 +31,8 @@ function general() {
     row(t('gen.theme'), select([['dark', t('gen.themeDark')], ['light', t('gen.themeLight')], ['system', t('gen.themeSystem')]], s.theme, (v) => save({ theme: v }))),
     card(t('gen.timerTitle'),
       row(t('gen.mode'), select([['toggle', t('gen.modeToggle')], ['separate', t('gen.modeSeparate')]], s.timer.mode, (v) => save({ timer: { mode: v } })), t('gen.modeHint')),
-      row(t('gen.hold'), number(s.timer.holdSeconds, 1, 600, 1, (n) => save({ timer: { holdSeconds: n } })), t('gen.holdHint')),
+      check(t('gen.holdForever'), s.timer.holdForever, (v) => save({ timer: { holdForever: v } }), t('gen.holdForeverHint')),
+      row(t('gen.hold'), Object.assign(number(s.timer.holdSeconds, 1, 600, 1, (n) => save({ timer: { holdSeconds: n } })), { disabled: s.timer.holdForever }), t('gen.holdHint')),
       row(t('gen.debounce'), number(s.timer.debounceMs, 0, 2000, 50, (n) => save({ timer: { debounceMs: n } })), t('gen.debounceHint'))
     ),
     check(t('gen.onTop'), s.alwaysOnTop, (v) => save({ alwaysOnTop: v })),
@@ -41,7 +42,7 @@ function general() {
 }
 
 // ---- Signals ----
-const NAMES = (mode) => (mode === 'separate' ? ['start', 'stop', 'reset'] : ['toggle', 'reset']);
+const NAMES = (mode) => [...(mode === 'separate' ? ['start', 'stop'] : ['toggle']), 'reset', 'next', 'prev', 'restart'];
 const nameLabel = (n) => t(`sig.name.${n}`);
 
 function midiCard() {
@@ -66,18 +67,28 @@ function midiCard() {
   });
   const mon = sig.midi.monitor.slice(0, 12).map((m) => h('tr', {},
     h('td', { text: new Date(m.t).toLocaleTimeString(GC.state.locale, { hour12: false }) }),
-    h('td', { text: m.msg.type === 'note' ? 'Note' : m.msg.type === 'cc' ? 'CC' : 'PC' }),
-    h('td', { text: String(m.msg.channel) }),
-    h('td', { text: String(m.msg.number) }),
-    h('td', { text: m.msg.type === 'pc' ? '–' : String(m.msg.value) }),
-    h('td', { class: 'act', text: m.action ? t(`act.${m.action}`) : '' })));
+    m.raw !== undefined
+      ? [h('td', { text: t('midi.raw') }), h('td', { text: '' }), h('td', { text: '' }), h('td', { text: m.raw }), h('td', { class: 'act', text: '' })]
+      : [h('td', { text: m.msg.type === 'note' ? 'Note' : m.msg.type === 'cc' ? 'CC' : 'PC' }),
+        h('td', { text: String(m.msg.channel) }),
+        h('td', { text: String(m.msg.number) }),
+        h('td', { text: m.msg.type === 'pc' ? '–' : String(m.msg.value) }),
+        h('td', { class: 'act', text: m.action ? t(`act.${m.action}`) : '' })]));
   return card('MIDI',
     check(t('midi.enable'), s.midi.enabled, (v) => save({ midi: { enabled: v } })),
     row(t('midi.input'), h('div', { class: 'inline-row' }, select(inputs, s.midi.input, (v) => save({ midi: { input: v } })), btn('midi.refresh', () => { sig.refreshMidi(); draw(); })), status),
     h('p', { class: 'hint', text: t(s.timer.mode === 'separate' ? 'midi.helpSeparate' : 'midi.helpToggle') }),
+    h('p', { class: 'hint', text: t('midi.helpProgram') }),
     ...rows,
     h('div', { class: 'monitor' }, h('div', { class: 'monitor-title', text: t('midi.monitor') }),
+      check(t('midi.showAll'), sig.midi.showRaw, (v) => { sig.midi.showRaw = v; draw(); }),
       mon.length ? h('table', {}, h('thead', {}, h('tr', {}, ['midi.colTime', 'midi.colType', 'midi.colCh', 'midi.colNum', 'midi.colVal', 'midi.colAction'].map((k) => h('th', { text: t(k) })))), h('tbody', {}, mon)) : h('div', { class: 'hint', text: t('midi.monitorEmpty') })),
+    h('div', { class: 'ports' }, h('div', { class: 'monitor-title', text: t('midi.ports') }),
+      sig.midi.ports.length
+        ? h('table', {}, h('thead', {}, h('tr', {}, ['midi.colName', 'midi.colState', 'midi.colConn'].map((k) => h('th', { text: t(k) })))),
+          h('tbody', {}, sig.midi.ports.map((p) => h('tr', {}, h('td', { text: p.name }), h('td', { text: String(p.state) }), h('td', { text: String(p.connection) })))))
+        : h('div', { class: 'hint', text: t('midi.noInputs') }),
+      h('p', { class: 'hint', text: t('midi.portsHint') })),
     h('p', { class: 'hint', text: t('midi.specLink') }),
     btn('midi.openSpec', () => window.api.links.open('https://github.com/djgragra/mictime/blob/main/docs/MIDI-SPEC.md'))
   );
@@ -236,7 +247,73 @@ function aboutTab() {
   return box;
 }
 
-const BUILD = { general, signals, updates: updatesTab, backup: backupTab, about: aboutTab };
+
+// ---- Programs: steps with limits, colours, warnings ----
+const newId = () => `p${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
+const DEFAULT_HEX = { normal: '#f1f4fa', warn: '#f2b441', over: '#ef4444', idle: '#3a4256' }; // what the picker shows when no colour is chosen (dark theme)
+let confirmDelete = false;
+
+function programsTab() {
+  const s = S();
+  const box = h('div', { class: 'tab' });
+  const progs = s.programs;
+  const cur = progs.find((p) => p.id === s.activeProgram) || null;
+  const edit = (fn) => { const all = structuredClone(S().programs); const p = all.find((x) => x.id === S().activeProgram); if (p) fn(p); return save({ programs: all }); };
+
+  const options = [['', t('prog.none')], ...progs.map((p) => [p.id, p.name])];
+  box.append(
+    card(t('prog.title'),
+      h('p', { class: 'hint', text: t('prog.intro') }),
+      row(t('prog.active'), h('div', { class: 'inline-row' },
+        select(options, s.activeProgram, (v) => { confirmDelete = false; save({ activeProgram: v }); }),
+        btn('prog.new', () => { const id = newId(); save({ programs: [...structuredClone(progs), { id, name: t('prog.defaultName', { n: progs.length + 1 }), steps: [{ name: t('prog.defaultStep', { n: 1 }), sec: 60 }] }], activeProgram: id }); }, 'ghost', { disabled: progs.length >= 8 }),
+        cur ? btn(confirmDelete ? 'prog.deleteSure' : 'prog.delete', () => { if (!confirmDelete) { confirmDelete = true; draw(); return; } confirmDelete = false; save({ programs: structuredClone(progs).filter((p) => p.id !== cur.id), activeProgram: '' }); }, 'ghost') : null)),
+      row(t('prog.endLabel'), select([['loop', t('prog.endLoop')], ['free', t('prog.endFree')]], s.programEnd, (v) => save({ programEnd: v })), t('prog.endHint')),
+      cur ? h('div', { class: 'field' }, h('label', { text: t('prog.name') }), h('input', { type: 'text', value: cur.name, maxLength: 60, onchange: (e) => edit((p) => { p.name = e.target.value.trim() || p.name; }) })) : null,
+      cur ? stepsEditor(cur, edit) : h('p', { class: 'hint', text: t('prog.noneHint') })),
+    card(t('col.title'),
+      h('p', { class: 'hint', text: t('col.intro') }),
+      row(t('col.warnSec'), number(s.timer.warnSeconds, 0, 3600, 1, (n) => save({ timer: { warnSeconds: n } })), t('col.warnSecHint')),
+      row(t('col.flashSec'), number(s.timer.flashSeconds, 0, 3600, 1, (n) => save({ timer: { flashSeconds: n } })), t('col.flashSecHint')),
+      ...['normal', 'warn', 'over', 'idle'].map((k) => h('div', { class: 'color-row' },
+        h('div', { text: t(`col.${k}`) }),
+        h('input', { type: 'color', value: s.colors[k] || DEFAULT_HEX[k], title: t(`col.${k}`), onchange: (e) => save({ colors: { [k]: e.target.value } }) }),
+        btn('col.default', () => save({ colors: { [k]: '' } }), 'ghost', { disabled: !s.colors[k] }),
+        h('span', { class: 'swatch', text: '01:30', style: undefined, dataset: { k } }))),
+      h('p', { class: 'hint', text: t('col.hint') }))
+  );
+  // swatches take their colour from the same variables as the figures (set through the style object, which the CSP allows)
+  for (const sw of box.querySelectorAll('.swatch')) sw.style.color = s.colors[sw.dataset.k] || DEFAULT_HEX[sw.dataset.k];
+  return box;
+}
+
+function stepsEditor(cur, edit) {
+  const idx = GC.program.index();
+  const wrap = h('div', { class: 'steps' });
+  const msg = h('div', { class: 'hint', text: t('prog.stepsHint') });
+  wrap.append(h('div', { class: 'step-row head' }, h('span'), h('span', { text: t('prog.stepName') }), h('span', { text: t('prog.minutes') }), h('span', { text: t('prog.seconds') })));
+  cur.steps.forEach((st, i) => {
+    const mins = Math.floor(st.sec / 60);
+    const secs = st.sec % 60;
+    const setTime = (m, sec) => edit((p) => { p.steps[i].sec = Math.max(0, Math.min(36000, m * 60 + sec)); });
+    wrap.append(h('div', { class: 'step-row' + (i === idx ? ' current' : '') },
+      h('span', { class: 'idx', text: String(i + 1) }),
+      h('input', { type: 'text', value: st.name, maxLength: 60, placeholder: t('prog.stepName'), 'aria-label': t('prog.stepName'), onchange: (e) => edit((p) => { p.steps[i].name = e.target.value.trim(); }) }),
+      h('input', { type: 'number', min: 0, max: 600, step: 1, value: mins, title: t('prog.minutes'), 'aria-label': t('prog.minutes'), onchange: (e) => setTime(Math.max(0, Math.round(Number(e.target.value)) || 0), secs) }),
+      h('input', { type: 'number', min: 0, max: 59, step: 1, value: secs, title: t('prog.seconds'), 'aria-label': t('prog.seconds'), onchange: (e) => setTime(mins, Math.min(59, Math.max(0, Math.round(Number(e.target.value)) || 0))) }),
+      h('button', { class: 'btn ghost compact', type: 'button', text: '↑', title: t('prog.up'), disabled: i === 0, onclick: () => edit((p) => { [p.steps[i - 1], p.steps[i]] = [p.steps[i], p.steps[i - 1]]; }) }),
+      h('button', { class: 'btn ghost compact', type: 'button', text: '↓', title: t('prog.down'), disabled: i === cur.steps.length - 1, onclick: () => edit((p) => { [p.steps[i + 1], p.steps[i]] = [p.steps[i], p.steps[i + 1]]; }) }),
+      h('button', { class: 'btn ghost compact', type: 'button', text: '✕', title: t('prog.remove'), onclick: () => edit((p) => { p.steps.splice(i, 1); }) })));
+  });
+  wrap.append(
+    h('div', { class: 'inline-actions' },
+      btn('prog.addStep', () => edit((p) => { p.steps.push({ name: t('prog.defaultStep', { n: p.steps.length + 1 }), sec: 60 }); }), 'ghost', { disabled: cur.steps.length >= 40 }),
+      btn('prog.prev', () => GC.action('prev', 'settings')), btn('prog.next', () => GC.action('next', 'settings')), btn('prog.restart', () => GC.action('restart', 'settings'))),
+    msg);
+  return wrap;
+}
+
+const BUILD = { general, programs: programsTab, signals, updates: updatesTab, backup: backupTab, about: aboutTab };
 
 function draw() {
   const nav = $('tabs');
@@ -260,7 +337,7 @@ export function initSettings() {
     refresh(levelOnly) {
       if ($('settings').hidden) return;
       if (levelOnly) return paintMeter();
-      if (tab === 'signals' && !(document.activeElement && document.activeElement.matches?.('input, select'))) draw();
+      if ((tab === 'signals' || tab === 'programs') && !(document.activeElement && document.activeElement.matches?.('input, select'))) draw();
     }
   };
 }

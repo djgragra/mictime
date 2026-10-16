@@ -1,5 +1,6 @@
 // Start-up and the timer screen. The timer itself (src/trigger/stopwatch.js) is plain logic; this file draws it.
 import { createStopwatch, formatDuration } from '../../src/trigger/stopwatch.js';
+import { limitState, clampIndex, currentStep, advance, back, stepAfter, stepText } from '../../src/limits.js';
 import { createSignals } from './signals.js';
 import { initSettings } from './settings.js';
 
@@ -10,15 +11,38 @@ const sw = createStopwatch();
 const now = () => performance.now();
 let lastPhase = 'idle';
 let lastText = '';
+let lastLimitClass = '';
+let lastStepKey = '';
+
+// ---- programs: the step each program is at, and the speech that just ended ----
+let programIndex = {}; // { programId: index }, remembered by the main process
+let finished = null; // { step } while the total of the last speech is on screen: it is shown in that step's colour
+let lastStepSignalAt = -Infinity;
+
+const program = () => GC.state.settings.programs.find((p) => p.id === GC.state.settings.activeProgram) || null;
+const indexOf = (p) => clampIndex(p, programIndex[p?.id] ?? 0);
+const setIndex = (p, i) => {
+  if (!p) return;
+  programIndex[p.id] = i;
+  window.api.runtime.setProgramIndex(p.id, i);
+};
+const activeStep = () => currentStep(program(), indexOf(program()));
 
 GC.drawPills = () => drawPills();
+GC.program = { current: program, index: () => indexOf(program()), set: (i) => { const p = program(); if (p) { setIndex(p, i); lastStepKey = ''; draw(); } } };
 GC.timer = { isBusy: () => sw.snapshot(now()).phase === 'running' };
 
 function applySettings(s) {
   const root = document.documentElement;
   const theme = s.theme === 'system' ? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark') : s.theme;
   root.dataset.theme = theme;
-  sw.configure({ holdMs: s.timer.holdSeconds * 1000, debounceMs: s.timer.debounceMs });
+  for (const k of ['normal', 'warn', 'over', 'idle']) {
+    if (s.colors[k]) root.style.setProperty(`--c-${k}`, s.colors[k]);
+    else root.style.removeProperty(`--c-${k}`);
+  }
+  sw.configure({ holdMs: s.timer.holdForever ? Infinity : s.timer.holdSeconds * 1000, debounceMs: s.timer.debounceMs });
+  fillProgramSelect();
+  lastStepKey = '';
   const separate = s.timer.mode === 'separate';
   $('btnStop').hidden = !separate;
   $('btnStart').textContent = GC.t(separate ? 'ctl.start' : 'ctl.toggle');
@@ -26,9 +50,44 @@ function applySettings(s) {
   $('hint').hidden = anySignal;
 }
 
+function fillProgramSelect() {
+  const sel = $('programSelect');
+  const s = GC.state.settings;
+  sel.replaceChildren(GC.h('option', { value: '', text: GC.t('prog.none'), selected: !s.activeProgram }), ...s.programs.map((p) => GC.h('option', { value: p.id, text: p.name, selected: p.id === s.activeProgram })));
+  $('stepbar').hidden = !s.programs.length;
+}
+
 function onAction(action, source) {
-  const res = sw.signal(action, now());
-  if (res.accepted) window.api.app.log('info', `signal ${action} via ${source}`);
+  const t = now();
+  const s = GC.state.settings;
+  if (action === 'next' || action === 'prev' || action === 'restart') {
+    // a console that sends two messages for one press must not skip a step
+    if (t - lastStepSignalAt < s.timer.debounceMs) return;
+    lastStepSignalAt = t;
+    const p = program();
+    if (!p) return;
+    const i = indexOf(p);
+    setIndex(p, action === 'restart' ? 0 : action === 'prev' ? back(p, i) : advance(p, i, s.programEnd));
+    window.api.app.log('info', `program ${action} via ${source}`);
+    lastStepKey = '';
+    draw();
+    GC.settingsUi?.refresh?.();
+    return;
+  }
+  const before = sw.snapshot(t).phase;
+  const res = sw.signal(action, t);
+  if (res.accepted) {
+    window.api.app.log('info', `signal ${action} via ${source}`);
+    const p = program();
+    if (before === 'running' && res.phase === 'holding') {
+      // the speech ended: remember its step for the colour of the total, and arm the next step
+      finished = { step: activeStep() };
+      if (p) setIndex(p, advance(p, indexOf(p), s.programEnd));
+    } else if (res.phase === 'running' || res.phase === 'idle') {
+      finished = null;
+    }
+  }
+  lastStepKey = '';
   draw();
 }
 
@@ -40,6 +99,16 @@ function draw() {
     $('digits').textContent = text;
     lastText = text;
   }
+  if (snap.phase === 'idle' && finished) finished = null; // the total went away by itself
+  // the limit of the step being timed: while the total is shown it is the step that just ended
+  const step = snap.phase === 'holding' ? finished?.step : activeStep();
+  const state = snap.phase === 'idle' ? 'none' : limitState(snap.ms, step?.sec || 0, { warnSec: GC.state.settings.timer.warnSeconds, flashSec: GC.state.settings.timer.flashSeconds });
+  const limitClass = `lim-${state === 'flash' && snap.phase !== 'running' ? 'over' : state}`; // it never blinks while the total is shown
+  if (limitClass !== lastLimitClass) {
+    document.body.className = document.body.className.replace(/\blim-\w+/g, '').trim() + ` ${limitClass}`;
+    lastLimitClass = limitClass;
+  }
+  drawSteps(snap.phase, step);
   if (snap.phase !== lastPhase) {
     lastPhase = snap.phase;
     document.body.className = document.body.className.replace(/phase-\w+/, `phase-${snap.phase}`);
@@ -49,7 +118,37 @@ function draw() {
   }
   const fill = $('holdFill');
   const hold = GC.state.settings.timer.holdSeconds * 1000;
-  fill.style.width = snap.phase === 'holding' ? `${Math.max(0, Math.min(100, (snap.holdLeftMs / hold) * 100))}%` : '0%';
+  fill.style.width = snap.phase === 'holding' && Number.isFinite(snap.holdLeftMs) ? `${Math.max(0, Math.min(100, (snap.holdLeftMs / hold) * 100))}%` : '0%';
+}
+
+// the line under the figures: the step on screen, and the one after it
+function drawSteps(phase, shown) {
+  const p = program();
+  const s = GC.state.settings;
+  const i = p ? indexOf(p) : 0;
+  const key = `${phase}|${p?.id}|${i}|${shown?.name}|${shown?.sec}|${finished ? 1 : 0}|${GC.state.lang}`;
+  if (key === lastStepKey) return;
+  lastStepKey = key;
+  const free = GC.t('prog.free');
+  let label = '';
+  let next = '';
+  if (p) {
+    const ended = i >= p.steps.length;
+    if (phase === 'holding' && finished?.step) {
+      label = stepText(finished.step, free);
+      const upcoming = currentStep(p, i);
+      next = upcoming ? GC.t('prog.nextStep', { s: stepText(upcoming, free) }) : GC.t('prog.end');
+    } else if (ended) {
+      label = GC.t('prog.end');
+    } else {
+      label = GC.t('prog.step', { i: i + 1, n: p.steps.length }) + ' · ' + stepText(shown, free);
+      const after = stepAfter(p, i, s.programEnd);
+      next = after ? GC.t('prog.nextStep', { s: stepText(after, free) }) : GC.t('prog.end');
+    }
+  }
+  $('stepLabel').textContent = label;
+  $('stepNext').textContent = next;
+  $('btnPrev').disabled = $('btnNext').disabled = $('btnRestart').disabled = !p;
 }
 
 // ---- pills: what each input is doing ----
@@ -89,6 +188,7 @@ async function save(patch) {
 }
 
 function adopt(res) {
+  if (res.programIndex) programIndex = { ...res.programIndex };
   GC.state.settings = res.settings;
   GC.state.keyStatus = res.keyStatus || GC.state.keyStatus;
   GC.state.lang = res.lang;
@@ -108,6 +208,7 @@ async function init() {
   GC.state.lang = res.lang;
   GC.state.locale = res.locale;
   document.documentElement.lang = res.lang;
+  programIndex = { ...(res.programIndex || {}) };
   GC.applyTexts();
   applySettings(res.settings);
 
@@ -124,6 +225,10 @@ async function init() {
   $('btnStart').addEventListener('click', () => onAction(GC.state.settings.timer.mode === 'separate' ? 'start' : 'toggle', 'button'));
   $('btnStop').addEventListener('click', () => onAction('stop', 'button'));
   $('btnReset').addEventListener('click', () => onAction('reset', 'button'));
+  $('btnPrev').addEventListener('click', () => onAction('prev', 'button'));
+  $('btnNext').addEventListener('click', () => onAction('next', 'button'));
+  $('btnRestart').addEventListener('click', () => onAction('restart', 'button'));
+  $('programSelect').addEventListener('change', (e) => { save({ activeProgram: e.target.value }); });
   $('btnFullscreen').addEventListener('click', () => window.api.window.toggleFullscreen());
   $('digits').addEventListener('dblclick', () => window.api.window.toggleFullscreen());
   document.addEventListener('keydown', (e) => {

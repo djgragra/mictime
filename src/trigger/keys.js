@@ -1,4 +1,4 @@
-// garage-common: trigger 1
+// garage-common: trigger 2
 // Keyboard shortcuts for the trigger module. Pure code: the accelerator syntax is Electron's, so the same string is
 // used for the global shortcut (main process) and for the key pressed while the window has the focus.
 
@@ -74,12 +74,14 @@ export function globalAllowed(accel) {
   return parts.length > 0 || /^F\d+$/.test(key) || /^num/.test(key) || /^Media/.test(key) || key === 'PrintScreen' || key === 'Pause' || key === 'Scrolllock';
 }
 
-// Which action a pressed accelerator means. mode as in midi.js; `reset` always. -> 'toggle'|'start'|'stop'|'reset'|null
+// Which action a pressed accelerator means. mode as in midi.js; `reset`, `next`, `prev` and `restart` always.
+// -> 'toggle'|'start'|'stop'|'reset'|'next'|'prev'|'restart'|null
 export function resolveKey(mode, keys, accel) {
   const a = normalizeAccelerator(accel);
   if (!a || !keys) return null;
   const same = (name) => keys[name] && normalizeAccelerator(keys[name]) === a;
   if (same('reset')) return 'reset';
+  for (const name of ['next', 'prev', 'restart']) if (same(name)) return name;
   if (mode === 'toggle') return same('toggle') ? 'toggle' : null;
   if (same('start')) return 'start';
   if (same('stop')) return 'stop';

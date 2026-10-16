@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 — 2026-10-16 (beta)
+
+- **Time limits and programs.** A **program** is a list of steps, each with a name and a time limit (for example Opening 00:45, News 01:00, Interview 03:00). The active program arms the limit of the current step, and **after every speech the next step is armed by itself**; at the end it starts again from the first step or goes on without a limit. A step with 00:00 has no limit. The step on screen and the next one are shown under the figures. Up to 8 programs of 40 steps, chosen from a menu on the main screen or in the new **Programs** tab. The step each program is at is remembered when the app is closed.
+- **Next step, Previous step, Restart program**: three new signals, assignable to a MIDI message or a key with Learn, for when the running order changes. A console that sends two messages for one press does not skip a step.
+- **Colours and warnings**: the figures are grey at zero, turn to the warning colour a few seconds before the limit (10 by default), to the "limit passed" colour (red) once it is passed, and blink slowly (about once a second) when it is passed by a lot (10 s by default). The total keeps the colour it had at the stop. The four colours can be chosen (default: the colours of the theme). With "reduce motion" on in the system a steady red frame replaces the blinking.
+- **Never reset by itself**: the total can stay on screen until the next start or a reset, instead of going back to zero after a number of seconds.
+- **MIDI diagnosis**: Settings → Signals lists the ports the system shows (state and connection) and can show all incoming messages, clock included, to see what a device really sends; the manual has a short troubleshooting section (a virtual port that passes nothing is recreated).
+- The backup carries the programs and the colours too; "add only the missing" adds the programs this computer does not have.
+- `src/trigger` is now version 2 (the three program signals, an infinite hold time).
+- Tests: 83 unit tests and an end-to-end run of the real app with the programs, the colours, the blinking, the debounce and "reduce motion".
+
 ## 0.1.0 — 2026-10-16 (beta)
 
 Beta versions are numbered `0.N.P` and published as GitHub pre-releases, so nobody is offered them by the update check. The first public release will be numbered `YY.M.N` (the year and month it comes out) and will carry this list.

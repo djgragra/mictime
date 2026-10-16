@@ -95,15 +95,99 @@ try {
   await sleep(300);
   check('switching the audio off releases the input', (await ev('GC.signals.audio.status')) === 'off' && (await ev('GC.signals.audio.stream')) === null);
 
+  // ---- programs, limits and colours ----
+  await set({ audio: { enabled: false }, timer: { mode: 'toggle', holdSeconds: 2, holdForever: false, debounceMs: 0, warnSeconds: 2, flashSeconds: 1 }, midi: { bindings: { toggle: null, start: null, stop: null, reset: null } }, key: { enabled: true, global: false, keys: { toggle: 'F9', reset: 'F10', next: 'F5', prev: 'F6', restart: 'F7' } } });
+  await set({ programs: [{ id: 'show', name: 'Show', steps: [{ name: 'News', sec: 3 }, { name: 'Chat', sec: 0 }, { name: 'End', sec: 5 }] }], activeProgram: 'show', programEnd: 'loop' });
+  await sleep(300);
+  await ev('GC.action("reset", "test")'); // the audio test may have left a count running
+  await ev('GC.program.set(0)');
+  await sleep(150);
+  const text = (id) => ev(`document.getElementById('${id}').textContent`);
+  check('program on screen: step 1/3 News 00:03, next Chat', (await text('stepLabel')) === 'Step 1/3 · News · 00:03' && (await text('stepNext')) === 'Next: Chat · no limit', `${await text('stepLabel')} | ${await text('stepNext')}`);
+  const cls = () => ev('document.body.className');
+  await key('F9', 'F9');
+  await sleep(1300);
+  check('1.3 s of a 3 s limit with a 2 s warning: warning colour', (await cls()).includes('lim-warn'), await cls());
+  await sleep(2000);
+  check('past the limit: over colour (red)', /lim-(over|flash)/.test(await cls()), await cls());
+  check('the figures are red', (await ev("getComputedStyle(document.getElementById('digits')).color")) === 'rgb(239, 68, 68)');
+  await sleep(1200);
+  check('past the limit by more than 1 s: blinking', (await cls()).includes('lim-flash') && (await ev("getComputedStyle(document.getElementById('digits')).animationName")) === 'pulse', await cls());
+  await key('F9', 'F9');
+  await sleep(200);
+  check('stop: the total keeps the red colour, no blinking, and the next step is armed', (await cls()).includes('lim-over') && !(await cls()).includes('lim-flash') && (await text('stepNext')).startsWith('Next: Chat') && (await text('stepLabel')).startsWith('News'), `${await cls()} | ${await text('stepLabel')} | ${await text('stepNext')}`);
+  await sleep(2300);
+  check('after the hold time: back to zero, grey, step 2/3 (no limit) is armed', (await cls()).includes('phase-idle') && (await text('stepLabel')) === 'Step 2/3 · Chat · no limit', `${await cls()} | ${await text('stepLabel')}`);
+  await key('F9', 'F9');
+  await sleep(1500);
+  check('a step with no limit never changes colour', (await cls()).includes('lim-none'), await cls());
+  await key('F9', 'F9');
+  await sleep(100);
+  await key('F10', 'F10');
+  check('reset does not advance a step (Chat was stopped before, so End is armed)', (await text('stepLabel')).startsWith('Step 3/3'), await text('stepLabel'));
+  await key('F6', 'F6');
+  check('previous step', (await text('stepLabel')).startsWith('Step 2/3'));
+  await key('F7', 'F7');
+  check('restart: first step', (await text('stepLabel')).startsWith('Step 1/3'));
+  await key('F5', 'F5');
+  await key('F5', 'F5');
+  await sleep(50);
+  check('next step twice (debounce 0 here): step 3', (await text('stepLabel')).startsWith('Step 3/3'), await text('stepLabel'));
+  await key('F5', 'F5');
+  check('loop at the end: back to the first step', (await text('stepLabel')).startsWith('Step 1/3'));
+  await set({ programEnd: 'free' });
+  await key('F6', 'F6');
+  await key('F5', 'F5'); await key('F5', 'F5'); await key('F5', 'F5');
+  check('"free" at the end: no limit and the program says so', (await text('stepLabel')) === 'End of the program: no limit', await text('stepLabel'));
+  // a console that sends two messages for one press must not skip a step
+  await set({ programEnd: 'loop', timer: { debounceMs: 500 } });
+  await ev('GC.program.set(0)');
+  await sleep(700);
+  await key('F5', 'F5'); await key('F5', 'F5');
+  await sleep(80);
+  check('two "next step" within the debounce time count as one', (await text('stepLabel')).startsWith('Step 2/3'), await text('stepLabel'));
+  await set({ timer: { debounceMs: 0 } });
+  await ev('GC.program.set(3)');
+  // remembered by the main process
+  const idx = JSON.parse(await ev('window.api.runtime.get().then(JSON.stringify)'));
+  check('the step is kept by the main process (not in the settings)', idx.programIndex.show === 3 && !JSON.stringify(await ev('GC.state.settings')).includes('programIndex'), JSON.stringify(idx));
+  // hold forever
+  await set({ programEnd: 'loop', activeProgram: '', timer: { holdForever: true, holdSeconds: 1 } });
+  await key('F9', 'F9'); await sleep(1100); await key('F9', 'F9');
+  await sleep(2500);
+  check('"never reset": the total is still there after the hold time', (await cls()).includes('phase-holding') && (await text('digits')) === '00:01', await cls());
+  await key('F9', 'F9');
+  check('a new start begins a new count', (await cls()).includes('phase-running'));
+  await key('F10', 'F10');
+  check('and reset clears it', (await cls()).includes('phase-idle'));
+  // with "reduce motion" on in the system there is no blinking: a steady red frame instead
+  await set({ programs: [{ id: 'q', name: 'Quick', steps: [{ name: 'Q', sec: 1 }] }], activeProgram: 'q', timer: { warnSeconds: 0, flashSeconds: 0, holdForever: false } });
+  await send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-motion', value: 'reduce' }] });
+  await ev('GC.program.set(0)');
+  await key('F9', 'F9');
+  await sleep(2300);
+  check('reduce motion: no animation on the figures, a red frame on the stage', (await ev("getComputedStyle(document.getElementById('digits')).animationName")) === 'none' && (await ev("getComputedStyle(document.querySelector('.stage')).boxShadow")).includes('rgb(239, 68, 68)'), await cls());
+  await send('Emulation.setEmulatedMedia', { features: [] });
+  await key('F10', 'F10');
+  await set({ activeProgram: '' });
+
+  // colours chosen by the user
+  await set({ colors: { normal: '#00ff00', idle: '#0000ff' }, timer: { holdForever: false } });
+  check('chosen colours apply (idle blue)', (await ev("getComputedStyle(document.getElementById('digits')).color")) === 'rgb(0, 0, 255)');
+  await key('F9', 'F9');
+  check('chosen colours apply (counting green)', (await ev("getComputedStyle(document.getElementById('digits')).color")) === 'rgb(0, 255, 0)');
+  await key('F10', 'F10');
+  await set({ colors: { normal: '', idle: '' } });
+
   // ---- settings tabs draw without errors, in the standard order ----
   await ev(`GC.settingsUi.open()`);
   const tabs = JSON.parse(await ev(`JSON.stringify([...document.querySelectorAll('#tabs .tab-btn')].map((b) => b.textContent))`));
-  check('tabs in the standard order', tabs.join('|') === 'General|Signals|Updates|Backup|Help & About', tabs.join('|'));
-  for (let i = 0; i < 5; i++) {
+  check('tabs in the standard order (own tabs after General)', tabs.join('|') === 'General|Programs|Signals|Updates|Backup|Help & About', tabs.join('|'));
+  for (let i = 0; i < 6; i++) {
     await ev(`document.querySelectorAll('#tabs .tab-btn')[${i}].click()`);
     check(`tab ${tabs[i]} has content`, (await ev(`document.getElementById('tabBody').children.length`)) > 0);
   }
-  await ev(`document.querySelectorAll('#tabs .tab-btn')[4].click()`);
+  await ev(`document.querySelectorAll('#tabs .tab-btn')[5].click()`);
   const support = await ev('window.api.app.supportInfo()');
   check('support info has version and system, no settings', /^MicTime \d+\.\d+\.\d+\nElectron/.test(support) && !/note|F9|ctrl/i.test(support), support);
 

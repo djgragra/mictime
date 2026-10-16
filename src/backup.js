@@ -1,7 +1,8 @@
 // garage-common: backup 1
 // Configuration backup (apps/COMMON-FEATURES.md, section 3). Pure code: the main process only asks for files.
 // MicTime holds no passwords or tokens, so the file never carries secrets and there is no "include passwords" box.
-// What it keeps: the signal mappings (MIDI messages, keys, audio gate), the timer mode and times, language and theme.
+// What it keeps: the signal mappings (MIDI messages, keys, audio gate), the timer mode and times, the programs, the colours,
+// language and theme.
 // Not in it: the choice made about updates, the window position, logs.
 import { APP_SLUG, isOwnFile, parseImport, sanitizeSettings } from './schema.js';
 
@@ -23,13 +24,16 @@ export function prepareImport(parsed) {
   return parseImport(parsed);
 }
 
-// "Add only the missing items": MicTime has no lists of items, only mappings. The mappings the file has and this
-// computer has not (an empty slot) are filled in; everything already set here stays as it is.
+// "Add only the missing items": the mappings the file has and this computer has not (an empty slot) are filled in, and
+// the programs of the file that this computer lacks (by id) are added; everything already set here stays as it is.
 export function missingItems(current, incoming) {
   const fill = (have, extra, empty) => Object.fromEntries(Object.keys({ ...have, ...extra }).map((k) => [k, empty(have[k]) ? extra[k] ?? have[k] : have[k]]));
+  const have = new Set(current.programs.map((p) => p.id));
   return {
     midi: { bindings: fill(current.midi.bindings, incoming.midi.bindings, (v) => !v) },
-    key: { keys: fill(current.key.keys, incoming.key.keys, (v) => !v) }
+    key: { keys: fill(current.key.keys, incoming.key.keys, (v) => !v) },
+    colors: fill(current.colors, incoming.colors, (v) => !v),
+    programs: [...current.programs, ...incoming.programs.filter((p) => !have.has(p.id))]
   };
 }
 

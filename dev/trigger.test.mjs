@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseMessage, learnBinding, matches, resolveMidi, bindingLabel, normalizeBinding, noteName } from '../src/trigger/midi.js';
+import { parseMessage, learnBinding, matches, resolveMidi, bindingLabel, normalizeBinding, noteName, BINDING_NAMES, EXTRA_ACTIONS } from '../src/trigger/midi.js';
 import { acceleratorFromEvent, normalizeAccelerator, globalAllowed, resolveKey, toElectron } from '../src/trigger/keys.js';
 import { createGate, rmsDb } from '../src/trigger/level.js';
 import { createStopwatch, formatDuration } from '../src/trigger/stopwatch.js';
@@ -224,4 +224,42 @@ test('formatDuration', () => {
   assert.equal(formatDuration(3_599_999), '59:59');
   assert.equal(formatDuration(3_661_000), '1:01:01');
   assert.equal(formatDuration(-5), '00:00');
+});
+
+// ---- version 2: steps of a program, hold forever ------------------------------------------------------------
+test('next, prev and restart act on "on" only, in both modes, and come before start/stop', () => {
+  assert.deepEqual(EXTRA_ACTIONS, ['next', 'prev', 'restart']);
+  assert.ok(BINDING_NAMES.includes('toggle') && BINDING_NAMES.includes('restart'));
+  const note = (n) => ({ type: 'note', channel: 1, number: n });
+  const b = { toggle: note(60), start: note(60), stop: note(61), next: { type: 'cc', channel: 0, number: 30 }, prev: { type: 'cc', channel: 0, number: 31 }, restart: { type: 'pc', channel: 0, number: 2 } };
+  for (const mode of ['toggle', 'separate']) {
+    assert.equal(resolveMidi(mode, b, parseMessage([0xb0, 30, 127])).action, 'next');
+    assert.equal(resolveMidi(mode, b, parseMessage([0xb2, 31, 1])).action, 'prev');
+    assert.equal(resolveMidi(mode, b, parseMessage([0xc3, 2])).action, 'restart');
+    assert.equal(resolveMidi(mode, b, parseMessage([0xb0, 30, 0])), null);
+  }
+  const keys = { toggle: 'F9', next: 'F5', prev: 'F6', restart: 'F7', reset: 'F8' };
+  assert.equal(resolveKey('toggle', keys, 'F5'), 'next');
+  assert.equal(resolveKey('separate', keys, 'f6'), 'prev');
+  assert.equal(resolveKey('toggle', keys, 'F7'), 'restart');
+  assert.equal(resolveKey('toggle', keys, 'F9'), 'toggle');
+});
+
+test('hold forever: with an infinite hold time the total stays until the next start or a reset', () => {
+  const sw = createStopwatch({ holdMs: Infinity, debounceMs: 0 });
+  sw.signal('start', 0);
+  sw.signal('stop', 4000);
+  assert.deepEqual(sw.snapshot(10 * 3600_000), { phase: 'holding', ms: 4000, holdLeftMs: Infinity });
+  assert.equal(sw.signal('start', 10 * 3600_000 + 1).phase, 'running');
+  sw.signal('stop', 10 * 3600_000 + 2000);
+  assert.equal(sw.signal('reset', 10 * 3600_000 + 3000).phase, 'idle');
+  const sw2 = createStopwatch({ holdMs: 1000, debounceMs: 0 });
+  sw2.configure({ holdMs: Infinity });
+  sw2.signal('start', 0);
+  sw2.signal('stop', 100);
+  assert.equal(sw2.snapshot(999999).phase, 'holding');
+  sw2.configure({ holdMs: 500 });
+  sw2.signal('start', 1_000_000);
+  sw2.signal('stop', 1_000_100);
+  assert.equal(sw2.snapshot(1_000_700).phase, 'idle');
 });
