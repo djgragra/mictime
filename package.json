@@ -1,0 +1,56 @@
+{
+  "name": "mictime",
+  "version": "26.10.1",
+  "description": "Talk timer for live radio: a signal (MIDI, key or audio level) starts the count, the next one stops it, the total stays on screen, then it returns to zero",
+  "main": "main.js",
+  "type": "module",
+  "author": "Graziano Melzi <hello@onairgarage.com> (https://onairgarage.com)",
+  "homepage": "https://onairgarage.com/tools/mictime/",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test dev/*.test.mjs",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux"
+  },
+  "dependencies": {
+    "electron-store": "^11.0.2"
+  },
+  "devDependencies": {
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.onairgarage.mictime",
+    "productName": "MicTime",
+    "publish": null,
+    "files": ["main.js", "preload.cjs", "src/**/*", "renderer/**/*", "assets/**/*", "CHANGELOG.md", "package.json"],
+    "directories": { "output": "release", "buildResources": "assets" },
+    "win": { "target": "nsis", "icon": "assets/icon.ico" },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.utilities",
+      "artifactName": "MicTime-${version}-${arch}.${ext}",
+      "extendInfo": { "NSMicrophoneUsageDescription": "MicTime reads the level of the input you choose to start and stop the timer. It never records or stores audio." }
+    },
+    "linux": { "target": ["AppImage"], "icon": "assets/linux-icons", "category": "AudioVideo" },
+    "nsis": {
+      "artifactName": "MicTime-Setup-${version}.exe",
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true,
+      "shortcutName": "MicTime",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico",
+      "installerHeaderIcon": "assets/icon.ico"
+    }
+  },
+  "repository": { "type": "git", "url": "git+https://github.com/djgragra/mictime.git" }
+}
