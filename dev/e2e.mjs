@@ -179,6 +179,20 @@ try {
   await key('F10', 'F10');
   await set({ colors: { normal: '', idle: '' } });
 
+  // ---- "What's new" must fit the window and close ----
+  await send('Emulation.setDeviceMetricsOverride', { width: 900, height: 480, deviceScaleFactor: 1, mobile: false });
+  await ev(`GC.showWhatsNew({ version: '9.9.9', date: '', bullets: Array.from({ length: 14 }, (_, i) => '**Item ' + i + '** with \`code\` and a long text that goes on and on so that the list is much taller than a small window, for sure, and wraps over several lines of the panel.') })`);
+  await sleep(200);
+  const wn = JSON.parse(await ev(`(() => { const b = document.getElementById('btnWhatsNewClose').getBoundingClientRect(); const p = document.querySelector('#whatsNew .panel').getBoundingClientRect(); return JSON.stringify({ btnBottom: b.bottom, panelBottom: p.bottom, h: innerHeight, text: document.getElementById('whatsNewList').textContent, strong: document.querySelectorAll('#whatsNewList strong').length, code: document.querySelectorAll('#whatsNewList code').length }); })()`));
+  check("What's new: the panel and its OK button are inside the window", wn.btnBottom <= wn.h && wn.panelBottom <= wn.h, JSON.stringify(wn));
+  check("What's new: bold and code are real elements, no raw ** or backticks", wn.strong === 14 && wn.code === 14 && !wn.text.includes('**') && !wn.text.includes('`'), JSON.stringify(wn));
+  await ev(`document.getElementById('btnWhatsNewClose').click()`);
+  check("What's new: the button closes it", await ev(`document.getElementById('whatsNew').hidden`));
+  await ev(`GC.showWhatsNew({ version: '9.9.9', date: '', bullets: ['one'] })`);
+  await key('Escape', 'Escape');
+  check("What's new: Esc closes it", await ev(`document.getElementById('whatsNew').hidden`));
+  await send('Emulation.clearDeviceMetricsOverride');
+
   // ---- settings tabs draw without errors, in the standard order ----
   await ev(`GC.settingsUi.open()`);
   const tabs = JSON.parse(await ev(`JSON.stringify([...document.querySelectorAll('#tabs .tab-btn')].map((b) => b.textContent))`));
