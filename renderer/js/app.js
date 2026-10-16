@@ -200,6 +200,35 @@ function adopt(res) {
   drawPills();
 }
 
+// **bold** and `code` of the CHANGELOG become real bold and code (through the DOM, never as HTML)
+function rich(text) {
+  return String(text).split(/(\*\*[^*]+\*\*|`[^`]+`)/).filter(Boolean).map((part) => {
+    if (part.startsWith('**') && part.endsWith('**')) return GC.h('strong', { text: part.slice(2, -2) });
+    if (part.startsWith('`') && part.endsWith('`')) return GC.h('code', { text: part.slice(1, -1) });
+    return part;
+  });
+}
+
+// "What's new": shown once after an update. It never grows taller than the window (the list scrolls, the button stays
+// in view) and closes with the button, with Esc or with a click outside the panel.
+function showWhatsNew(wn) {
+  const box = $('whatsNew');
+  $('whatsNewTitle').textContent = GC.t('whatsnew.title', { v: wn.version });
+  $('whatsNewList').replaceChildren(...wn.bullets.map((b) => GC.h('li', {}, ...rich(b))));
+  const close = () => {
+    box.hidden = true;
+    document.removeEventListener('keydown', onKey, true);
+    window.api.whatsNew.seen();
+  };
+  const onKey = (e) => { if (e.key === 'Escape' || e.key === 'Enter') { e.preventDefault(); close(); } };
+  document.addEventListener('keydown', onKey, true);
+  $('btnWhatsNewClose').onclick = close;
+  box.onclick = (e) => { if (e.target === box) close(); };
+  box.hidden = false;
+  $('btnWhatsNewClose').focus();
+}
+GC.showWhatsNew = showWhatsNew;
+
 async function init() {
   const res = await window.api.settings.get();
   GC.state.platform = res.platform;
@@ -246,12 +275,7 @@ async function init() {
 
   // after an update: what's new, once
   const wn = await window.api.whatsNew.get();
-  if (wn) {
-    $('whatsNewTitle').textContent = GC.t('whatsnew.title', { v: wn.version });
-    $('whatsNewList').replaceChildren(...wn.bullets.map((b) => GC.h('li', { text: b })));
-    $('whatsNew').hidden = false;
-    $('btnWhatsNewClose').addEventListener('click', () => { $('whatsNew').hidden = true; window.api.whatsNew.seen(); });
-  }
+  if (wn) showWhatsNew(wn);
 }
 
 init();

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1 — 2026-10-16 (beta)
+
+- **Fixed: the "What's new" window could not be closed** when the list was taller than the window (the OK button was out of view). The list now scrolls, the title and the OK button stay in view, and the window also closes with `Esc`, `Enter` or a click outside it.
+- **Fixed**: `**bold**` and `code` marks of the release notes showed as plain asterisks and backticks in "What's new"; they now show as bold and code.
+- Test: the end-to-end run opens "What's new" with a long list in a small window and checks that the button is in view and that it closes.
+
 ## 0.2.0 — 2026-10-16 (beta)
 
 - **Time limits and programs.** A **program** is a list of steps, each with a name and a time limit (for example Opening 00:45, News 01:00, Interview 03:00). The active program arms the limit of the current step, and **after every speech the next step is armed by itself**; at the end it starts again from the first step or goes on without a limit. A step with 00:00 has no limit. The step on screen and the next one are shown under the figures. Up to 8 programs of 40 steps, chosen from a menu on the main screen or in the new **Programs** tab. The step each program is at is remembered when the app is closed.
