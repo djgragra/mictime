@@ -29,7 +29,8 @@ control room.
 ## Settings → Programs
 
 **A program** is a list of steps, each with a name and a time limit (minutes and seconds; 00:00 = no limit): for example *Opening 00:45, News 01:00,
-Interview 03:00, Closing 00:30*. Without an active program the timer has no limit.
+Interview 03:00, Closing 00:30*. Without an active program the **single time limit** applies (same tab, *Time limit, colours and warnings*): minutes and seconds, 00:00 = no limit. It gets the same colours,
+warning and blinking as the steps of a program, and the line under the figures says `Limit 01:00`.
 
 - **Using it**: choose the active program (here or with the menu on the main screen). The first step is armed. When a speech ends (the stop signal), the total stays on
   screen in the colour it had, and the **next step is armed by itself**. **Reset** cancels the count in progress and does *not* move to the next step.

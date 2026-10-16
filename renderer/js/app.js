@@ -26,7 +26,13 @@ const setIndex = (p, i) => {
   programIndex[p.id] = i;
   window.api.runtime.setProgramIndex(p.id, i);
 };
-const activeStep = () => currentStep(program(), indexOf(program()));
+// The step being timed: the current step of the active program, or, with no program, the single limit of the settings.
+const activeStep = () => {
+  const p = program();
+  if (p) return currentStep(p, indexOf(p));
+  const sec = GC.state.settings.timer.limitSeconds;
+  return sec > 0 ? { name: '', sec } : null;
+};
 
 GC.drawPills = () => drawPills();
 GC.program = { current: program, index: () => indexOf(program()), set: (i) => { const p = program(); if (p) { setIndex(p, i); lastStepKey = ''; draw(); } } };
@@ -126,7 +132,7 @@ function drawSteps(phase, shown) {
   const p = program();
   const s = GC.state.settings;
   const i = p ? indexOf(p) : 0;
-  const key = `${phase}|${p?.id}|${i}|${shown?.name}|${shown?.sec}|${finished ? 1 : 0}|${GC.state.lang}`;
+  const key = `${phase}|${p?.id}|${i}|${shown?.name}|${shown?.sec}|${finished ? 1 : 0}|${GC.state.lang}|${s.timer.limitSeconds}`;
   if (key === lastStepKey) return;
   lastStepKey = key;
   const free = GC.t('prog.free');
@@ -146,6 +152,7 @@ function drawSteps(phase, shown) {
       next = after ? GC.t('prog.nextStep', { s: stepText(after, free) }) : GC.t('prog.end');
     }
   }
+  if (!p && s.timer.limitSeconds > 0) next = GC.t('prog.limitOnly', { s: formatDuration(s.timer.limitSeconds * 1000) });
   $('stepLabel').textContent = label;
   $('stepNext').textContent = next;
   $('btnPrev').disabled = $('btnNext').disabled = $('btnRestart').disabled = !p;

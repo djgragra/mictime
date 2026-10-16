@@ -89,6 +89,17 @@ test('defaults: no program, loop at the end, colours of the theme, warning 10 s,
   assert.deepEqual(sanitizeSettings(d), d);
 });
 
+test('the single limit (no program): default none, clamped, kept by a patch, in the backup', () => {
+  assert.equal(defaults().timer.limitSeconds, 0);
+  assert.equal(sanitizeSettings({ timer: { limitSeconds: 90 } }).timer.limitSeconds, 90);
+  assert.equal(sanitizeSettings({ timer: { limitSeconds: -4 } }).timer.limitSeconds, 0);
+  assert.equal(sanitizeSettings({ timer: { limitSeconds: 99_999_999 } }).timer.limitSeconds, 36000);
+  assert.equal(sanitizeSettings({ timer: { limitSeconds: 'x' } }).timer.limitSeconds, 0);
+  const base = sanitizeSettings({ timer: { limitSeconds: 60, holdSeconds: 9 } });
+  assert.equal(sanitizeSettings({ timer: { holdSeconds: 3 } }, base).timer.limitSeconds, 60, 'a patch keeps it');
+  assert.equal(prepareImport(JSON.parse(JSON.stringify(buildBackup(base)))).timer.limitSeconds, 60);
+});
+
 test('programs: at most 8 of 40 steps, clean names, limits clamped, ids unique, active must exist', () => {
   const many = Array.from({ length: 12 }, (_, i) => ({ id: `p${i}`, name: `P${i}`, steps: [] }));
   assert.equal(sanitizePrograms(many).length, 8);
