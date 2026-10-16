@@ -31,32 +31,43 @@ const midi = (bytes) => ev(`GC.signals.handleMidi({ data: new Uint8Array([${byte
 // the clock can be moved forward so a long intervention does not need a long wait
 await ev(`window.__skew = 0; const real = performance.now.bind(performance); performance.now = () => real() + window.__skew; 1`);
 
-await set({ language: 'en', theme: 'dark', timer: { mode: 'toggle', holdSeconds: 8, debounceMs: 0 }, midi: { enabled: true, input: 'Studio mixer MIDI out', bindings: { toggle: { type: 'note', channel: 1, number: 60 }, reset: { type: 'pc', channel: 1, number: 9 } } }, key: { enabled: true, global: true, keys: { toggle: 'Ctrl+Alt+F9', reset: 'Ctrl+Alt+F10' } } });
-await ev('GC.signals.reconfigure(); 1');
+const steps = [{ name: 'Opening', sec: 45 }, { name: 'News', sec: 60 }, { name: 'Interview', sec: 180 }, { name: 'Closing', sec: 30 }];
+await set({
+  language: 'en', theme: 'dark',
+  timer: { mode: 'toggle', holdSeconds: 8, debounceMs: 0, warnSeconds: 10, flashSeconds: 10 },
+  programs: [{ id: 'morning', name: 'Morning show', steps }, { id: 'evening', name: 'Evening show', steps: [{ name: 'News', sec: 90 }, { name: 'Chat', sec: 0 }] }],
+  activeProgram: 'morning', programEnd: 'loop',
+  midi: { enabled: true, input: 'Studio mixer MIDI out', bindings: { toggle: { type: 'note', channel: 1, number: 60 }, reset: { type: 'pc', channel: 1, number: 9 }, next: { type: 'note', channel: 1, number: 62 }, prev: { type: 'note', channel: 1, number: 59 }, restart: { type: 'cc', channel: 0, number: 21 } } },
+  key: { enabled: true, global: true, keys: { toggle: 'Ctrl+Alt+F9', reset: 'Ctrl+Alt+F10', next: 'Ctrl+Alt+Right', prev: 'Ctrl+Alt+Left' } }
+});
+await ev('GC.signals.reconfigure(); GC.program.set(1); 1');
 await sleep(500);
 
-// 1 · counting
+// 1 · near the limit of the step "News" (60 s): the figures turn to the warning colour
 await midi([0x90, 60, 100]);
-await ev('window.__skew = 137000; 1');
+await ev('window.__skew = 52000; 1');
 await sleep(300);
-await shot('01-counting.png');
+await shot('01-counting-warning.png');
 
-// 2 · the total stays on screen
+// 2 · the step is over by 12 s: the total stays on screen in red, the next step is armed
+await ev('window.__skew = 72000; 1');
 await sleep(200);
 await midi([0x90, 60, 90]);
-await ev('window.__skew += 1500; 1');
 await sleep(300);
-await shot('02-total.png');
+await shot('02-total-over-limit.png');
 await midi([0xc0, 9]);
 
-// 3 · Settings → Signals (MIDI mapping and monitor)
-await set({ timer: { mode: 'separate' }, midi: { bindings: { start: { type: 'note', channel: 1, number: 60 }, stop: { type: 'note', channel: 1, number: 62 }, reset: { type: 'cc', channel: 0, number: 21 }, toggle: null } } });
-for (const m of [[0x90, 60, 100], [0x90, 62, 100], [0xb0, 21, 127], [0xb0, 30, 64], [0xc0, 3]]) { await midi(m); await sleep(30); await ev('window.__skew += 3000; 1'); }
-await ev('GC.action("reset", "demo"); GC.settingsUi.open(); document.querySelectorAll("#tabs .tab-btn")[1].click(); 1');
+// 3 · Settings → Programs
+await ev('GC.program.set(2); GC.settingsUi.open(); document.querySelectorAll("#tabs .tab-btn")[1].click(); 1');
 await sleep(300);
-await shot('03-signals-midi.png');
-await ev('document.getElementById("tabBody").scrollTop = 600; 1');
-await shot('04-signals-key-audio.png');
+await shot('03-programs.png');
+
+// 4 · Settings → Signals (MIDI mapping and monitor)
+await set({ timer: { mode: 'separate' }, midi: { bindings: { start: { type: 'note', channel: 1, number: 60 }, stop: { type: 'note', channel: 1, number: 61 }, toggle: null } } });
+for (const m of [[0x90, 60, 100], [0x90, 61, 100], [0x90, 62, 100], [0xb0, 30, 64], [0xc0, 3]]) { await midi(m); await sleep(30); await ev('window.__skew += 3000; 1'); }
+await ev('GC.action("reset", "demo"); document.querySelectorAll("#tabs .tab-btn")[2].click(); 1');
+await sleep(300);
+await shot('04-signals-midi.png');
 await ev('document.getElementById("btnCloseSettings").click(); 1');
 
 console.log(app.errors.length ? `errors: ${app.errors.join(' | ')}` : 'no console errors');

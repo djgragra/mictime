@@ -1,6 +1,6 @@
 # MicTime MIDI specification
 
-How to make a mixer, a piece of software or a button box start and stop MicTime. Version 1, 16 October 2026.
+How to make a mixer, a piece of software or a button box start and stop MicTime. Version 1.1 (beta 0.2.0), 16 October 2026.
 
 MicTime only **receives** MIDI. It never sends anything and never asks for system-exclusive access. Any source that can send one of
 the three messages below on a MIDI port the computer can see will work. You choose the message in *Settings → Signals → MIDI* with
@@ -26,6 +26,7 @@ sensing, system-exclusive, pitch bend and aftertouch are ignored and never shown
 | **One signal** (toggle) | `Start / stop`, `Reset` | Each **on** message starts the count if it is not running and stops it if it is. **Off** messages are ignored, so a button that sends on and then off does not act twice. |
 | **Two signals** (separate) | `Start`, `Stop`, `Reset` | **On** of `Start` starts, **on** of `Stop` stops. If you give `Start` and `Stop` the **same** message, **on starts and off stops** (a fader, a mute button, a note held while the microphone is open). |
 | both | `Reset` | **On** returns to zero at once. |
+| both | `Next step`, `Previous step`, `Restart program` | **On** moves the active program (a list of steps with time limits, *Settings → Programs*) one step on, one step back, or to the first step. They do not start or stop the count. |
 
 After a stop the total stays on screen for the time set in *Settings → General* (1–600 s, 5 by default) and the timer goes back to zero.
 A new start during that time begins a new count.
@@ -75,6 +76,8 @@ There is no standard for this: these are suggestions so that two installations c
 | Start / stop (toggle) or Start | Note 60 (C4) |
 | Stop (two signals) | Note 62 (D4) |
 | Reset | Note 64 (E4), or Program Change 0 |
+| Next step / Previous step | Note 65 (F4) / Note 63 (D#4) |
+| Restart program | Program Change 1 |
 | Gate (same message for start and stop) | CC 20, 127 = on, 0 = off |
 
 ## Sources to re-check

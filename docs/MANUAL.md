@@ -9,6 +9,8 @@ control room.
 - The big figures show minutes and seconds (`mm:ss`; `h:mm:ss` from one hour).
 - The word above them says what is happening: **READY** (zero, waiting), **COUNTING**, **TOTAL** (the stopped count, kept on screen; a thin bar
   shows how long it will stay).
+- With a **program** active, under the figures you see the step being timed and the one after it, with a menu to choose the program and buttons for
+  the previous step, the next step and *restart from the first step*. The figures change colour with the limit of the step (see *Programs*).
 - **START / STOP** (or **START** and **STOP**) and **RESET** do by hand what the signals do. The three small indicators at the top right say what
   each input is doing: **MIDI** (ready, no input, no access), **KEY** (global, window only), **AUDIO**.
 - **Full screen**: `F11`, the button at the top right, or a double-click on the figures; `Esc` leaves it. In full screen only the figures show.
@@ -18,10 +20,31 @@ control room.
 
 - **Language**, **theme** (dark, light, follow the system).
 - **How signals work**: *one signal* (the first starts, the next stops, the same message or key) or *two signals* (one starts, the other stops).
-- **Show the total for**: how many seconds the total stays on screen after a stop (1–600, default 5).
+- **Show the total for**: how many seconds the total stays on screen after a stop (1–600, default 5). With **Never reset by itself** the total stays until the
+  next start signal or a reset.
 - **Ignore a repeated signal within**: some consoles send two messages for one press; two start/stop signals closer than this many
   milliseconds count as one (default 300; reset is never ignored).
 - **Always on top**.
+
+## Settings → Programs
+
+**A program** is a list of steps, each with a name and a time limit (minutes and seconds; 00:00 = no limit): for example *Opening 00:45, News 01:00,
+Interview 03:00, Closing 00:30*. Without an active program the timer has no limit.
+
+- **Using it**: choose the active program (here or with the menu on the main screen). The first step is armed. When a speech ends (the stop signal), the total stays on
+  screen in the colour it had, and the **next step is armed by itself**. **Reset** cancels the count in progress and does *not* move to the next step.
+- **At the end of the program**: *start again from the first step*, or *go on without a limit*.
+- **When the running order changes**: **Previous step**, **Next step** and **Restart from the first step**, with the buttons or with signals you assign in
+  *Signals* (a MIDI message or a key, with Learn). Two messages for one press (see *Ignore a repeated signal*) do not skip a step.
+- **Editing**: name, minutes and seconds of every step, move up and down, remove, add (up to 40 steps); up to 8 programs. The step in green is the one ready now.
+  The step each program is at is remembered when the app is closed; it is not part of the backup.
+
+**Colours and warnings** (same tab)
+- The figures are **grey** at zero, in the **counting** colour while counting, in the **warning** colour from *N seconds before the limit* (default 10), in the
+  **limit passed** colour (red) once the limit is passed, and they **blink slowly** (about once a second) once it is passed by *M seconds* (default 10). The total keeps
+  the colour it had at the stop and never blinks. A step with no limit never changes colour.
+- With *reduce motion* on in the system there is no blinking: a steady red frame is shown instead.
+- Each of the four colours can be chosen; *Default* goes back to the colour of the theme.
 
 ## Settings → Signals
 
@@ -32,7 +55,9 @@ control room.
 3. Press **Learn** next to *Start / stop* (or *Start*, *Stop*, *Reset*) and send the message from the console: a button, a note, a
    controller or a program change. MicTime shows it, for example `Note C4 (60) · ch 1`. Set the channel to *any channel* if the source
    changes it.
-4. The **Incoming messages** list shows the last messages and what MicTime did with each: use it to see what your device really sends.
+4. The **Incoming messages** list shows the last messages and what MicTime did with each: use it to see what your device really sends. *Show all messages* also lists
+   the ones MicTime ignores (clock, keep-alive), in hexadecimal. **Ports seen by the system** lists each input with its state and connection.
+5. Next step, Previous step and Restart program can be assigned the same way (they act on *on* only, like Reset).
 
 A value above 0 is **on**, 0 is **off**; only *on* acts, except when *Start* and *Stop* are the same message, where on starts and off stops. The full
 description, with examples, is in [MIDI-SPEC.md](MIDI-SPEC.md).
@@ -52,6 +77,14 @@ threshold) and the **hold time**. The count **starts** when the level reaches th
 the hold time, so a breath or a short pause does not end it. The first time, the system asks to allow the microphone. Only the level is
 measured: nothing is recorded, saved or sent, and the sound is not played.
 
+### If nothing arrives
+
+1. Does the monitor show anything? If the sender is on the same computer, a *virtual port* connects the two (see [MIDI-SPEC.md](MIDI-SPEC.md)).
+2. Is the port in *Ports seen by the system*? If not, press *Refresh*; if still not, the system does not show it.
+3. Does the sender show activity but nothing arrives (for example loopMIDI's *Total data* stays at 0 while you play)? In a test on Windows a virtual port that had been created
+   once passed nothing until it was **removed and created again**, then everything worked. Recreate the port, restart the sender, press *Refresh*.
+4. Two programs on the same input at the same time may not both receive: close the other one, to see if it changes anything.
+
 ## Settings → Updates
 
 MicTime looks for a new version once a day (switch it off here). A strip under the header offers **Download and install**, **Remind me later**
@@ -62,8 +95,8 @@ update, **What's new** shows once. Nothing is installed without a click.
 
 ## Settings → Backup
 
-**Export** saves the configuration (MIDI messages, keys, audio and timer settings, language, theme) as `mictime-backup-YYYY-MM-DD.json`.
-**Import** reads it back: *Replace everything*, or *Add only the missing* (mappings you have not set yet are filled in, everything else stays).
+**Export** saves the configuration (MIDI messages, keys, audio and timer settings, programs, colours, language, theme) as `mictime-backup-YYYY-MM-DD.json`.
+**Import** reads it back: *Replace everything*, or *Add only the missing* (mappings and colours you have not set yet are filled in, programs this computer lacks are added, everything else stays).
 The file holds no passwords or keys.
 
 ## Settings → Help & About

@@ -23,6 +23,14 @@
       <div id="stateLabel" class="state-label" data-i18n="phase.idle">READY</div>
       <div id="digits" class="digits" role="timer" aria-live="off">00:00</div>
       <div class="hold-bar" aria-hidden="true"><div id="holdFill" class="hold-fill"></div></div>
+      <div id="stepbar" class="stepbar" hidden>
+        <select id="programSelect" class="program-select" data-i18n-title="prog.select"></select>
+        <button id="btnPrev" class="hbtn small" type="button" data-i18n-title="prog.prev">‹</button>
+        <div id="stepLabel" class="step-label" role="status"></div>
+        <button id="btnNext" class="hbtn small" type="button" data-i18n-title="prog.next">›</button>
+        <button id="btnRestart" class="hbtn small" type="button" data-i18n-title="prog.restart">↺</button>
+      </div>
+      <div id="stepNext" class="step-next"></div>
       <div id="controls" class="controls">
         <button id="btnStart" class="btn btn-main" type="button" data-i18n="ctl.start">START</button>
         <button id="btnStop" class="btn" type="button" data-i18n="ctl.stop" hidden>STOP</button>

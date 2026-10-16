@@ -1,10 +1,11 @@
-// garage-common: trigger 1
+// garage-common: trigger 2
 // The talk timer: the first signal starts the count, the next one stops it, the total stays visible for `holdMs`
 // and then the timer goes back to zero. Time is passed in (monotonic milliseconds), so it can be tested.
 //
 // Actions: 'toggle' (start if not running, stop if running), 'start', 'stop', 'reset'.
 // Phases:  'idle' (00:00) -> 'running' -> 'holding' (the total) -> 'idle'.
 
+// holdMs may be Infinity: the total then stays until the next start or a reset.
 export const DEFAULTS = { holdMs: 5000, debounceMs: 300 };
 
 export function createStopwatch({ holdMs = DEFAULTS.holdMs, debounceMs = DEFAULTS.debounceMs } = {}) {
@@ -57,7 +58,7 @@ export function createStopwatch({ holdMs = DEFAULTS.holdMs, debounceMs = DEFAULT
       return { phase, ms: 0 };
     },
     configure(next) {
-      if (Number.isFinite(next.holdMs)) holdMs = next.holdMs;
+      if (Number.isFinite(next.holdMs) || next.holdMs === Infinity) holdMs = next.holdMs;
       if (Number.isFinite(next.debounceMs)) debounceMs = next.debounceMs;
     }
   };

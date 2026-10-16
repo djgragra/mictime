@@ -1,4 +1,4 @@
-// garage-common: trigger 1
+// garage-common: trigger 2
 // MIDI input for the trigger module: parse a raw message, describe it, learn a binding from it and decide which
 // action a message means. Pure code (no Electron, no Web MIDI), so MicTime and G-Clock share it and it is unit tested.
 //
@@ -8,6 +8,9 @@
 
 export const TYPES = ['note', 'cc', 'pc'];
 export const ACTIONS = ['toggle', 'start', 'stop', 'reset'];
+// Actions for a sequence of steps (a program): they act on the app, not on the timer. Like reset they fire on "on" only.
+export const EXTRA_ACTIONS = ['next', 'prev', 'restart'];
+export const BINDING_NAMES = [...ACTIONS, ...EXTRA_ACTIONS];
 
 // -> { type: 'note'|'cc'|'pc', channel: 1-16, number: 0-127, value: 0-127, on: boolean } or null for anything else
 // (system messages, clock, active sensing, pitch bend, aftertouch, malformed bytes).
@@ -62,7 +65,7 @@ export function matches(binding, msg) {
 }
 
 // What a message means, given the mode and the bindings. -> { action, name } or null.
-//   mode 'toggle':   `toggle` fires on "on" only; `reset` fires on "on" only.
+//   mode 'toggle':   `toggle` fires on "on" only; `reset`, `next`, `prev` and `restart` fire on "on" only, in both modes.
 //   mode 'separate': `start` and `stop` fire on "on" only; if start and stop are the SAME message, "on" starts and
 //                    "off" stops (a gate: a mic fader, a note held while the mic is open).
 // Note Off / value 0 never fires anything else, so a button that sends on and off does not act twice.
@@ -70,6 +73,7 @@ export function resolveMidi(mode, bindings, msg) {
   if (!msg || !bindings) return null;
   const hit = (name) => matches(bindings[name], msg);
   if (hit('reset') && msg.on) return { action: 'reset', name: 'reset' };
+  for (const name of EXTRA_ACTIONS) if (hit(name) && msg.on) return { action: name, name };
   if (mode === 'toggle') return hit('toggle') && msg.on ? { action: 'toggle', name: 'toggle' } : null;
   const start = hit('start');
   const stop = hit('stop');

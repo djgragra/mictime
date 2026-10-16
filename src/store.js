@@ -14,7 +14,9 @@ const store = new Store({
     windowBounds: { width: 1100, height: 640 },
     // kept apart from the settings on purpose: not part of a backup, not reset by an import
     updateState: { skipVersion: '', remindUntil: 0, lastCheck: null },
-    lastSeenVersion: ''
+    lastSeenVersion: '',
+    // the step each program is at: { <programId>: index }. Runtime state, not part of the settings or of a backup.
+    programIndex: {}
   }
 });
 
@@ -42,3 +44,10 @@ export function setUpdateState(patch) {
 }
 export const getLastSeenVersion = () => store.get('lastSeenVersion');
 export const setLastSeenVersion = (v) => store.set('lastSeenVersion', String(v || ''));
+export const getProgramIndex = () => store.get('programIndex');
+export function setProgramIndex(id, index) {
+  const all = { ...getProgramIndex(), [id]: index };
+  // forget programs that no longer exist
+  const alive = new Set(getSettings().programs.map((p) => p.id));
+  store.set('programIndex', Object.fromEntries(Object.entries(all).filter(([k]) => alive.has(k))));
+}

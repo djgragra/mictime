@@ -3,6 +3,8 @@
   --bg: #0b0d12; --panel: #141824; --panel2: #1b2030; --line: #2a3040; --fg: #f1f4fa; --fg2: #b3bccd; --dim: #6c778c;
   --blue: #5b8cff; --green: #35c98f; --amber: #f2b441; --red: #ef4444; --digits-idle: #3a4256;
   --shadow: 0 8px 28px rgba(0, 0, 0, 0.35);
+  /* colours of the figures; Settings → Programs can override them (renderer/js/app.js) */
+  --c-normal: var(--fg); --c-warn: var(--amber); --c-over: var(--red); --c-idle: var(--digits-idle);
   --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, 'Liberation Mono', monospace;
 }
@@ -37,12 +39,17 @@ header { display: flex; align-items: center; gap: 12px; padding: 10px 16px; bord
 /* ---- the timer ---- */
 .stage { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1vh; padding: 12px 16px; min-height: 0; }
 .state-label { font-size: clamp(14px, 3.2vh, 34px); letter-spacing: 0.35em; font-weight: 700; color: var(--dim); text-indent: 0.35em; }
-.digits { font-family: var(--font); font-weight: 800; font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; line-height: 1; font-size: min(30vw, 56vh); color: var(--digits-idle); user-select: none; letter-spacing: -0.02em; }
-.phase-running .digits { color: var(--fg); }
+/* figures: grey at zero; the normal colour while counting; the warning colour near the limit; the over colour past it;
+   a slow blink (about once a second) when the limit is passed by a lot. The total keeps the colour it had at the stop. */
+.digits { font-family: var(--font); font-weight: 800; font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; line-height: 1; font-size: min(30vw, 56vh); color: var(--c-idle); user-select: none; letter-spacing: -0.02em; }
+body:not(.phase-idle) .digits { color: var(--c-normal); }
+body:not(.phase-idle).lim-warn .digits { color: var(--c-warn); }
+body:not(.phase-idle).lim-over .digits, body:not(.phase-idle).lim-flash .digits { color: var(--c-over); }
+body.phase-running.lim-flash .digits { animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: 0.2; } }
 .phase-running .state-label { color: var(--green); }
 .phase-running .state-label::before { content: '●'; margin-right: 0.6em; color: var(--red); animation: blink 1.2s steps(2, jump-none) infinite; }
-.phase-holding .digits { color: var(--amber); }
-.phase-holding .state-label { color: var(--amber); }
+.phase-holding .state-label { color: var(--fg2); }
 @keyframes blink { 50% { opacity: 0.25; } }
 .hold-bar { width: min(60vw, 720px); height: 6px; border-radius: 99px; background: transparent; overflow: hidden; }
 .phase-holding .hold-bar { background: var(--panel2); }
@@ -133,4 +140,40 @@ a { color: var(--blue); }
 }
 @media (prefers-reduced-motion: reduce) {
   .phase-running .state-label::before, .upd-fill { animation: none; transition: none; }
+}
+
+/* ---- programs: the step line under the figures ---- */
+.stepbar { display: flex; align-items: center; gap: 8px; margin-top: 1.5vh; max-width: 100%; }
+.step-label { font-size: clamp(15px, 2.6vh, 26px); font-weight: 700; color: var(--fg); min-width: 12em; text-align: center; }
+.step-next { color: var(--dim); font-size: clamp(13px, 2vh, 20px); min-height: 1.4em; text-align: center; }
+.hbtn.small { width: 34px; height: 34px; font-size: 20px; line-height: 1; color: var(--fg2); }
+.hbtn.small:disabled { opacity: 0.35; cursor: default; }
+.program-select { max-width: 16em; padding: 5px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); font: inherit; font-size: 13px; }
+body.fullscreen #stepbar select, body.fullscreen #stepbar button { display: none; }
+body.fullscreen #stepbar[hidden] { display: none !important; }
+
+/* ---- Settings → Programs ---- */
+.steps { width: 100%; }
+.step-row { display: grid; grid-template-columns: 2.2em 1fr 5.5em 5.5em auto auto auto; gap: 6px; align-items: center; padding: 4px 0; border-top: 1px solid var(--line); }
+.step-row input[type='text'] { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); min-width: 0; }
+.step-row input[type='number'] { width: 100%; }
+.step-row.head { border-top: 0; font-size: 12px; color: var(--dim); }
+.step-row .idx { color: var(--dim); font-family: var(--mono); font-size: 12px; text-align: right; }
+.step-row.current .idx { color: var(--green); font-weight: 700; }
+.field input[type='text'] { font: inherit; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); width: min(24em, 100%); }
+.color-row { display: grid; grid-template-columns: 9em auto auto 1fr; gap: 10px; align-items: center; padding: 5px 0; border-top: 1px solid var(--line); }
+.color-row input[type='color'] { width: 44px; height: 28px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+.swatch { font-family: var(--font); font-weight: 800; font-size: 22px; font-variant-numeric: tabular-nums; }
+.inline-actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+.ports { margin-top: 10px; }
+.ports table { width: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  body.phase-running.lim-flash .digits { animation: none; }
+  /* no blinking: a steady red frame says the limit is passed by a lot */
+  body.phase-running.lim-flash .stage { box-shadow: inset 0 0 0 8px var(--c-over); }
+}
+@media (max-width: 640px) {
+  .step-row { grid-template-columns: 1.6em 1fr 4.5em 4.5em; }
+  .color-row { grid-template-columns: 1fr auto; }
 }

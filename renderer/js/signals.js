@@ -7,13 +7,21 @@ const GC = window.GC;
 
 export function createSignals({ getSettings, onAction, onChange }) {
   // ---- MIDI ----
-  const midi = { access: null, error: '', inputs: [], monitor: [], flashAt: 0, learn: null, learnTimer: null };
+  const midi = { access: null, error: '', inputs: [], ports: [], monitor: [], showRaw: false, flashAt: 0, learn: null, learnTimer: null };
+  // the monitor can be fed hundreds of messages a second (a fader, a clock): the screen is redrawn at most every 150 ms
+  let redrawQueued = false;
+  const redrawSoon = () => {
+    if (redrawQueued) return;
+    redrawQueued = true;
+    setTimeout(() => { redrawQueued = false; onChange(); }, 150);
+  };
 
   function attachMidi() {
     if (!midi.access) return;
     const s = getSettings().midi;
     const all = [...midi.access.inputs.values()];
     midi.inputs = all.map((i) => i.name || 'MIDI input');
+    midi.ports = all.map((i) => ({ name: i.name || 'MIDI input', state: i.state, connection: i.connection })); // for the diagnostic list in Settings
     for (const input of all) {
       input.onmidimessage = s.enabled && (!s.input || s.input === input.name) ? onMidiMessage : null;
     }
@@ -39,7 +47,15 @@ export function createSignals({ getSettings, onAction, onChange }) {
 
   function onMidiMessage(ev) {
     const msg = parseMessage(ev.data);
-    if (!msg) return; // clock, active sensing, sysex…
+    if (!msg) {
+      // clock, active sensing, sysex…: only listed when "show all messages" is on (a diagnostic aid)
+      if (midi.showRaw && ev.data?.length) {
+        midi.monitor.unshift({ t: Date.now(), raw: Array.from(ev.data.slice(0, 8), (b) => b.toString(16).padStart(2, '0')).join(' ') });
+        if (midi.monitor.length > 30) midi.monitor.length = 30;
+        redrawSoon();
+      }
+      return;
+    }
     midi.flashAt = performance.now();
     if (midi.learn) {
       const b = learnBinding(msg);
@@ -53,7 +69,7 @@ export function createSignals({ getSettings, onAction, onChange }) {
     const hit = s.midi.enabled ? resolveMidi(s.timer.mode, s.midi.bindings, msg) : null;
     midi.monitor.unshift({ t: Date.now(), msg, action: hit?.action || '' });
     if (midi.monitor.length > 30) midi.monitor.length = 30;
-    onChange();
+    redrawSoon();
     if (hit) onAction(hit.action, 'midi');
   }
 

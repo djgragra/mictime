@@ -12,6 +12,10 @@ contextBridge.exposeInMainWorld('api', {
     export: () => ipcRenderer.invoke('backup:export'),
     import: () => ipcRenderer.invoke('backup:import')
   },
+  runtime: {
+    get: () => ipcRenderer.invoke('runtime:get'),
+    setProgramIndex: (id, index) => ipcRenderer.invoke('runtime:set', id, index)
+  },
   clipboard: { write: (text) => ipcRenderer.invoke('clipboard:write', text) },
   window: { toggleFullscreen: () => ipcRenderer.invoke('window:toggle-fullscreen') },
   links: { open: (url) => ipcRenderer.invoke('links:open', url) },

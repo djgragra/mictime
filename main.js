@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import { defaults, REPO_LINKS } from './src/schema.js';
 import {
   getSettings, updateSettings, replaceSettings, getWindowBounds, setWindowBounds,
-  getUpdateState, setUpdateState, getLastSeenVersion, setLastSeenVersion, hadSettingsFile, settingsFile
+  getUpdateState, setUpdateState, getLastSeenVersion, setLastSeenVersion, hadSettingsFile, settingsFile, getProgramIndex, setProgramIndex
 } from './src/store.js';
 import {
   checkForUpdate, downloadInstaller, sweepPartials, bannerState, remindLaterState, skipVersionState, makeSafetyCopy, installPlan,
@@ -17,7 +17,7 @@ import { buildBackup, prepareImport, applyImport, backupFileName, MAX_BACKUP_BYT
 import { createLogger } from './src/logs.js';
 import { buildSupportInfo } from './src/support.js';
 import { resolveLanguage, resolveLocale, T } from './src/i18n.js';
-import { globalAllowed, toElectron, normalizeAccelerator, ACTIONS } from './src/trigger/index.js';
+import { globalAllowed, toElectron, normalizeAccelerator, BINDING_NAMES } from './src/trigger/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -156,7 +156,7 @@ function applyKeys() {
   const status = { global: {}, failed: [] };
   if (!capturing && s.key.enabled && s.key.global) {
     const used = new Set();
-    for (const name of ACTIONS) {
+    for (const name of BINDING_NAMES) {
       const accel = normalizeAccelerator(s.key.keys[name]);
       if (!accel || !globalAllowed(accel) || used.has(accel)) continue;
       used.add(accel);
@@ -188,7 +188,7 @@ function afterSettingsChange(prev) {
   if (sig(prev.key) !== sig(next.key)) applyKeys();
 }
 
-const payload = () => ({ settings: getSettings(), lang: resolveLanguage(), locale: resolveLocale(), platform: process.platform, keyStatus });
+const payload = () => ({ settings: getSettings(), lang: resolveLanguage(), locale: resolveLocale(), platform: process.platform, keyStatus, programIndex: getProgramIndex() });
 
 // ---- IPC ---------------------------------------------------------------------------------
 
@@ -208,6 +208,12 @@ handle('settings:update', (patch) => {
   return payload();
 });
 handle('keys:status', () => keyStatus);
+handle('runtime:get', () => ({ programIndex: getProgramIndex() }));
+handle('runtime:set', (id, index) => {
+  if (typeof id !== 'string' || id.length > 40 || !Number.isInteger(index) || index < 0 || index > 1000) return false;
+  setProgramIndex(id, index);
+  return true;
+});
 handle('keys:capture', (on) => {
   capturing = !!on;
   applyKeys();

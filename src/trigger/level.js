@@ -1,4 +1,4 @@
-// garage-common: trigger 1
+// garage-common: trigger 2
 // Audio level as a trigger: a gate with a threshold and a hold time. Only the LEVEL is used: this code never sees
 // samples, nothing is recorded or kept. The renderer measures the level (RMS of the block, in dBFS) and feeds it here.
 
