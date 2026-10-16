@@ -8,11 +8,11 @@ By Graziano Melzi · [OnAir Garage](https://onairgarage.com) — contact: hello@
 
 ## Links
 
-- Tool page: https://onairgarage.com/tools/mictime/ (when published)
+- Tool page: https://onairgarage.com/tools/mictime/
 - Author: Graziano Melzi · OnAir Garage · hello@onairgarage.com
 - License: MIT (see `LICENSE`)
 - Manual: [docs/MANUAL.md](docs/MANUAL.md) · MIDI specification: [docs/MIDI-SPEC.md](docs/MIDI-SPEC.md)
-- Systems: Windows, macOS (Intel and Apple silicon), Linux (AppImage, x64). **What has been run:** the unit tests and an end-to-end run of the real app (Electron under Xvfb) on Linux x64; on **Windows** the installer of 0.1.0 was run by the author, with MIDI from virtual ports (loopMIDI, VMPK, MIDI-OX) and a global shortcut with another program in front. Not yet run on macOS, with real MIDI equipment, a real microphone or the new programs and colours on Windows (see "Not validated").
+- Systems: Windows, macOS (Intel and Apple silicon), Linux (AppImage, x64). **What has been run:** the unit tests and an end-to-end run of the real app (Electron under Xvfb) on Linux x64; on **Windows** the installer, MIDI from virtual ports (loopMIDI, VMPK, MIDI-OX), a global shortcut with another program in front, programs, colours and blinking, all tried by the author on a real screen; on **macOS (Intel)** the app and MIDI from the IAC Driver with VMPK, tried by the author. Not yet run on macOS Apple silicon, on a real Linux desktop, with a real mixer or a real microphone (see "Not validated").
 
 ## What it does
 
@@ -87,11 +87,12 @@ The app is free and **not code-signed**, so the first launch may show a warning:
 
 ## Not validated
 
-- macOS: the interface, the installer, the first-launch warning, the microphone permission prompt. Windows: *Close and install* (does the new version start again after the installer, `runAfterFinish`?), the microphone, the programs and the colours.
-- **Real MIDI**: on Windows MIDI arrived from virtual ports (loopMIDI with VMPK and MIDI-OX); a real console or controller was not used, and the input list on hot-plug is untested. On macOS and Linux nothing was received from MIDI at all.
-- **Global shortcuts**: on Windows a real key press with another program in front worked (author's test); not tried on macOS, Linux X11 and Wayland.
-- **Programs, limit colours and blinking** were checked in the real window on Linux only; the look on a real screen in a studio (contrast of the colours at a distance) is not judged.
-- **Audio**: only Chromium's fake input device was used; no real microphone, no sound card.
+- **Audio**: only Chromium's fake input device was used; no real microphone or sound card.
+- **Real MIDI equipment**: MIDI arrived from virtual ports on Windows (loopMIDI with VMPK and MIDI-OX) and on macOS Intel (IAC Driver with VMPK); a real console or controller was not used, and the input list on hot-plug is untested.
+- **Updates**: *Close and install* (does the new version start again after the installer on Windows, `runAfterFinish`? the disk image on macOS) can only be tried with a second release, so it has not been tried.
+- **Systems**: macOS Apple silicon, the AppImage on a real Linux desktop, the microphone permission prompt on macOS.
+- **Global shortcuts**: tried on Windows only (a real key press with another program in front); not on macOS, Linux X11 or Wayland.
+- How the colours read on a studio screen **at a distance** is not judged.
 - The X32 and MB Studio connection examples (see `docs/MIDI-SPEC.md`).
 - The Spanish texts have not been read by a native speaker.
 
@@ -124,7 +125,7 @@ Icons: `PLAYWRIGHT_MODULE=… CHROMIUM=… node dev/make-icons.mjs` (from `asset
 
 ## Credits
 
-Electron (MIT), electron-store (MIT). System fonts only; no third-party content is bundled. The idea comes from a radio presenter, Emanuele, who needed a talk timer next to a mixer and a playout program that can send MIDI.
+Electron (MIT), electron-store (MIT). System fonts only; no third-party content is bundled.
 
 ## In italiano
 

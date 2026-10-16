@@ -153,11 +153,11 @@ test('support info: version, system, last check and error; home as ~; never sett
   const text = buildSupportInfo({
     app: 'MicTime', version: '26.10.1', electron: '44.5.1', chrome: '140.0', platform: 'darwin', arch: 'arm64', osRelease: '24.0.0', language: 'es',
     lastCheck: { at: Date.UTC(2026, 9, 16, 8, 0, 0), ok: true },
-    lastError: { t: Date.UTC(2026, 9, 16, 9, 0, 0), message: 'failed at /Users/mario/x' },
+    lastError: { t: Date.UTC(2026, 9, 16, 9, 0, 0), message: 'failed at /Users/someone/x' },
     home: ''
   });
   assert.match(text, /^MicTime 26\.10\.1\nElectron 44\.5\.1 \(Chrome 140\.0\)\nSystem: darwin arm64 24\.0\.0\nLanguage: es\n/);
   assert.match(text, /Last error: .* failed at ~\/x/);
-  assert.ok(!/mario|X32|note|midi/i.test(text));
+  assert.ok(!/someone|X32|note|midi/i.test(text));
   assert.equal(tidy('open /root/s/a.txt', '/root'), 'open ~/s/a.txt');
 });
