@@ -120,6 +120,13 @@ td.act { color: var(--green); font-family: var(--font); }
 .about-mark { width: 56px; height: 56px; }
 .about-name { font-size: 22px; font-weight: 800; }
 .about-version { color: var(--fg2); font-size: 13px; }
+.tip-card { display: flex; align-items: center; gap: 16px; background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; margin: 12px 0; }
+.tip-jar { width: 80px; height: auto; flex: none; }
+.tip-body { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.tip-text { margin: 0; font-size: 13px; line-height: 1.45; color: var(--fg2); }
+.tip-pill { font: inherit; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 6px 16px; border-radius: 99px; border: 2px solid #fbf4e4; background: #c8232c; color: #fbf4e4; cursor: pointer; }
+.tip-pill:hover { background: #de2d37; }
+.tip-pill:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .links { margin: 0; padding-left: 18px; line-height: 1.8; }
 a { color: var(--blue); }
 

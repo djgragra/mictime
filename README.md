@@ -82,14 +82,14 @@ The app is free and **not code-signed**, so the first launch may show a warning:
 
 | Reference | What it validates | Result | How to re-run |
 |---|---|---|---|
-| Unit tests (`dev/*.test.mjs`) | message parsing, learn, matching, the toggle / separate / gate rules, keys, the audio gate, the timer (hold, debounce, reset), settings validation, programs and colours, the limit colours and the steps, backup, logs, support info, the guided update with a fake GitHub (hash mismatch, interrupted download, `.part` cleanup, safety copy), the three languages, packaging rules | 68 tests, all pass (Linux, Node 22) | `npm test` |
+| Unit tests (`dev/*.test.mjs`) | message parsing, learn, matching, the toggle / separate / gate rules, keys, the audio gate, the timer (hold, debounce, reset), settings validation, programs and colours, the limit colours and the steps, backup, logs, support info, the guided update with a fake GitHub (hash mismatch, interrupted download, `.part` cleanup, safety copy), the three languages, packaging rules | 88 tests, all pass (Linux, Node 22) | `npm test` |
 | End-to-end run (`dev/e2e.mjs`) on the real app | start-up with ES modules, timer through the button, MIDI messages (injected into the real handler), learn, keys with the window in front, programs (steps, loop, free, debounce, remembered step), limit colours, the blinking and "reduce motion", "never reset", chosen colours, global shortcuts registered with the system (registration only), the audio gate with Chromium's fake audio device, settings tabs, language and theme | all checks pass on **Linux x64, Electron under Xvfb**. The packaged Linux build (`electron-builder --linux --dir`, code inside `app.asar`) was also started once and loaded its pages and modules | `npm ci && node dev/e2e.mjs` (needs `xvfb-run` or a display) |
 
 ## Not validated
 
 - **Audio**: only Chromium's fake input device was used; no real microphone or sound card.
 - **Real MIDI equipment**: MIDI arrived from virtual ports on Windows (loopMIDI with VMPK and MIDI-OX) and on macOS Intel (IAC Driver with VMPK); a real console or controller was not used, and the input list on hot-plug is untested.
-- **Updates**: *Close and install* (does the new version start again after the installer on Windows, `runAfterFinish`? the disk image on macOS) can only be tried with a second release, so it has not been tried.
+- **Updates**: *Close and install* (does the new version start again after the installer on Windows, `runAfterFinish`? the disk image on macOS) can only be tried by updating from one release to the next (26.10.1 to 26.10.2 is the first chance), so it has not been tried.
 - **Systems**: macOS Apple silicon, the AppImage on a real Linux desktop, the microphone permission prompt on macOS.
 - **Global shortcuts**: tried on Windows only (a real key press with another program in front); not on macOS, Linux X11 or Wayland.
 - How the colours read on a studio screen **at a distance** is not judged.

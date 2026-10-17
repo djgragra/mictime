@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { defaults, REPO_LINKS } from './src/schema.js';
+import { defaults, isAllowedExternal } from './src/schema.js';
 import {
   getSettings, updateSettings, replaceSettings, getWindowBounds, setWindowBounds,
   getUpdateState, setUpdateState, getLastSeenVersion, setLastSeenVersion, hadSettingsFile, settingsFile, getProgramIndex, setProgramIndex
@@ -299,8 +299,8 @@ handle('window:toggle-fullscreen', () => {
   return mainWindow.isFullScreen();
 });
 
-// Only the fixed project addresses and this app's own release pages open in the system browser.
-const allowedExternal = (url) => typeof url === 'string' && (REPO_LINKS.includes(url) || url.startsWith(`https://github.com/${REPO}/releases/`));
+// Only the fixed project addresses, the tip jar page of the site and this app's own release pages open in the system browser.
+const allowedExternal = (url) => isAllowedExternal(url, REPO);
 handle('links:open', async (url) => {
   if (!allowedExternal(url)) return { ok: false };
   await shell.openExternal(url);

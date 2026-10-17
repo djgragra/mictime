@@ -1,5 +1,6 @@
 // Settings: General · Signals · Updates · Backup · Help & About (the standard order of apps/COMMON-FEATURES.md, 5.1).
 import { bindingLabel, acceleratorFromEvent, globalAllowed } from '../../src/trigger/index.js';
+import { tipUrl } from '../../src/schema.js';
 
 const GC = window.GC;
 const { h, $ } = GC;
@@ -242,7 +243,12 @@ function aboutTab() {
       h('p', { class: 'hint', text: t('about.supportHint') })),
     card(t('about.privacyTitle'), h('p', { text: t('about.privacy') })),
     card(t('about.unsignedTitle'), h('p', { text: t('about.unsigned') })),
-    card(t('about.credits'), h('p', { text: t('about.creditsText') }))
+    card(t('about.credits'), h('p', { text: t('about.creditsText') })),
+    h('section', { class: 'tip-card' },
+      h('img', { class: 'tip-jar', src: 'img/tip-jar.png', alt: '', width: 80, height: 59 }),
+      h('div', { class: 'tip-body' },
+        h('p', { class: 'tip-text', text: t('about.tipText') }),
+        h('button', { class: 'tip-pill', type: 'button', text: t('about.tipBtn'), onclick: () => window.api.links.open(tipUrl(GC.state.lang)) })))
   );
   return box;
 }
