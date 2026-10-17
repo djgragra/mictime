@@ -1,6 +1,6 @@
 {
   "name": "mictime",
-  "version": "26.10.1",
+  "version": "26.10.2",
   "description": "Talk timer for live radio: a signal (MIDI, key or audio level) starts the count, the next one stops it, the total stays on screen, then it returns to zero",
   "main": "main.js",
   "type": "module",
@@ -16,10 +16,10 @@
     "dist:linux": "electron-builder --linux"
   },
   "dependencies": {
-    "electron-store": "^11.0.2"
+    "electron-store": "^12.0.0"
   },
   "devDependencies": {
-    "electron": "^44.5.1",
+    "electron": "^44.9.0",
     "electron-builder": "^26.15.3"
   },
   "build": {

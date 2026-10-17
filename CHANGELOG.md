@@ -1,5 +1,12 @@
 # Changelog
 
+## 26.10.2 — 2026-10-17
+
+Maintenance release.
+
+- **Help & About** has a small card at the bottom with the OnAir Garage tip jar: one line and one button that opens the site's tip page in your browser, in the language of the app. No pop-ups, nothing in the main window.
+- **Dependencies**: electron-store 12 (your settings file is read as it was, nothing is lost) and Electron 44.9.0.
+
 ## 26.10.1 — 2026-10-16
 
 First public release. MicTime is a **talk timer for live radio, events and talks**: a signal starts the count, the next one stops it, the total stays on screen for a few seconds and the timer returns to zero. It starts empty: no signal is assigned, no program and no limit, so nothing happens until you choose how to start it.

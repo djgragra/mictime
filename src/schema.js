@@ -18,6 +18,19 @@ export const REPO_LINKS = [
   'https://github.com/djgragra/mictime/blob/main/docs/MIDI-SPEC.md'
 ];
 
+// The tip jar page of the site, one per language. Opened in the system browser; never a payment link, so the
+// app does not change if the site changes its payment provider.
+export const TIP_LINKS = {
+  en: 'https://onairgarage.com/support/',
+  it: 'https://onairgarage.com/it/support/',
+  es: 'https://onairgarage.com/es/support/'
+};
+export const tipUrl = (lang) => TIP_LINKS[lang] || TIP_LINKS.en;
+
+// What may open in the system browser: the fixed project addresses, the tip jar page and the repository's release pages.
+export const isAllowedExternal = (url, repo) =>
+  typeof url === 'string' && (REPO_LINKS.includes(url) || Object.values(TIP_LINKS).includes(url) || url.startsWith(`https://github.com/${repo}/releases/`));
+
 export const LIMITS = {
   holdSeconds: [1, 600],
   debounceMs: [0, 2000],
