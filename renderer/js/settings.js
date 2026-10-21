@@ -245,7 +245,8 @@ function aboutTab() {
     card(t('about.unsignedTitle'), h('p', { text: t('about.unsigned') })),
     card(t('about.credits'), h('p', { text: t('about.creditsText') })),
     h('section', { class: 'tip-card' },
-      h('img', { class: 'tip-jar', src: 'img/tip-jar.png', alt: '', width: 80, height: 59 }),
+      h('button', { class: 'tip-jarbtn', type: 'button', tabindex: '-1', 'aria-hidden': 'true', onclick: () => window.api.links.open(tipUrl(GC.state.lang)) },
+        h('img', { class: 'tip-jar', src: 'img/tip-jar.png', alt: '', width: 80, height: 59 })),
       h('div', { class: 'tip-body' },
         h('p', { class: 'tip-text', text: t('about.tipText') }),
         h('button', { class: 'tip-pill', type: 'button', text: t('about.tipBtn'), onclick: () => window.api.links.open(tipUrl(GC.state.lang)) })))

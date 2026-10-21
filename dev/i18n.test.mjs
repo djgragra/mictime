@@ -29,7 +29,7 @@ test('no empty texts, and no English left in the Italian and Spanish updater tex
 
 test('every key used by the interface exists', () => {
   const used = new Set();
-  const prefix = /^(common|hdr|settings|phase|ctl|hint|pill|sig|act|sec|gen|midi|key|audio|bk|about|whatsnew|upd|prog|col)\./;
+  const prefix = /^(common|hdr|settings|phase|ctl|hint|pill|sig|act|sec|gen|midi|key|audio|bk|about|whatsnew|upd|prog|col|cmp|sp)\./;
   const files = fs.readdirSync(path.join(root, 'js')).map((f) => path.join(root, 'js', f)).filter((f) => !f.endsWith('i18n.js'));
   for (const f of [...files, path.join(root, 'index.html')]) {
     const src = fs.readFileSync(f, 'utf-8');

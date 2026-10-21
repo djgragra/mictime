@@ -35,6 +35,8 @@ header { display: flex; align-items: center; gap: 12px; padding: 10px 16px; bord
 .ic { width: 58%; height: 58%; background-size: contain; background-repeat: no-repeat; background-position: center; }
 .ic-gear { background-image: url('img/gear.svg'); }
 .ic-full { background-image: url('img/fullscreen.svg'); }
+.ic-compact { background-image: url('img/compact.svg'); }
+.ic-list { background-image: url('img/list.svg'); }
 
 /* ---- the timer ---- */
 .stage { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1vh; padding: 12px 16px; min-height: 0; }
@@ -59,6 +61,24 @@ body.phase-running.lim-flash .digits { animation: pulse 1s ease-in-out infinite;
 .stage > .hint { max-width: 40em; text-align: center; margin-top: 1vh; }
 body.fullscreen header, body.fullscreen .controls, body.fullscreen .stage > .hint, body.fullscreen .update-banner { display: none !important; }
 body.fullscreen .root { grid-template-rows: 1fr; }
+/* compact view: a small window with the figures only; double-click, Esc or the corner button bring the full window back */
+.compact-exit { display: none; }
+body.compact header, body.compact .controls, body.compact .stage > .hint, body.compact .update-banner, body.compact .state-label, body.compact .stepbar, body.compact .step-next { display: none !important; }
+body.compact .root { grid-template-rows: 1fr; }
+body.compact .stage { padding: 4px 8px; gap: 0; position: relative; }
+body.compact .digits { font-size: min(24vw, 70vh); white-space: nowrap; }
+body.compact.long .digits { font-size: min(15vw, 70vh); }
+body.compact .hold-bar { width: 80vw; height: 4px; }
+body.compact .compact-exit { display: block; position: absolute; top: 2px; right: 2px; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 6px; background: var(--panel2); color: var(--fg2); font-size: 14px; line-height: 1; cursor: pointer; opacity: 0; transition: opacity .15s ease; }
+body.compact:hover .compact-exit, body.compact .compact-exit:focus-visible { opacity: 0.85; }
+@media (prefers-reduced-motion: reduce) { body.compact .compact-exit { transition: none; } }
+
+/* ---- speeches (the list of the last speeches) ---- */
+.sp-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.sp-table th { text-align: left; font-size: 12px; color: var(--dim); font-weight: 600; padding: 4px 8px; border-bottom: 1px solid var(--line); }
+.sp-table td { padding: 6px 8px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.sp-table td.num { font-family: var(--mono); font-weight: 700; }
+.sp-table td.over { color: var(--red); }
 
 /* ---- buttons and fields ---- */
 .btn { font: inherit; font-weight: 600; padding: 10px 22px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel2); color: var(--fg); cursor: pointer; }
@@ -122,6 +142,9 @@ td.act { color: var(--green); font-family: var(--font); }
 .about-version { color: var(--fg2); font-size: 13px; }
 .tip-card { display: flex; align-items: center; gap: 16px; background: var(--panel2); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; margin: 12px 0; }
 .tip-jar { width: 80px; height: auto; flex: none; }
+.tip-jarbtn { flex: none; display: block; padding: 0; border: 0; background: none; font: inherit; line-height: 0; cursor: pointer; transition: transform .15s ease; }
+.tip-jarbtn:hover { transform: rotate(-4deg) scale(1.06); }
+@media (prefers-reduced-motion: reduce) { .tip-jarbtn { transition: none; } .tip-jarbtn:hover { transform: none; } }
 .tip-body { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
 .tip-text { margin: 0; font-size: 13px; line-height: 1.45; color: var(--fg2); }
 .tip-pill { font: inherit; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; padding: 6px 16px; border-radius: 99px; border: 2px solid #fbf4e4; background: #c8232c; color: #fbf4e4; cursor: pointer; }

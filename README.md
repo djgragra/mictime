@@ -24,7 +24,9 @@ By Graziano Melzi · [OnAir Garage](https://onairgarage.com) — contact: hello@
 - **Keyboard**: a key or combination you choose, as a **global shortcut** (works with another program in front, where the system allows it) or with the window in front. A global shortcut needs a modifier, an F key, a numpad key or a media key; the app says if the system refused it.
 - **Audio level** (off by default): input, threshold and hold time. The count starts when the level reaches the threshold and stops after it stays below for the hold time. Only the level is measured; nothing is recorded, saved or sent, and the sound is not played.
 - Repeated messages from a console (two for one press) are taken as one within a time you can change.
-- Always on top, full screen (`F11`), the PC is kept from suspending while the app is open.
+- **Compact view** (header button, or *View → Compact view* on macOS): a small window with the figures only, always on top, to keep in a corner of the screen; it remembers its own size and place. A double-click on the figures, `Esc` or the small button in its corner bring the full window back.
+- **Speeches** (header button): the last 20 speeches of the session with time, program and step, duration and limit (in red when passed). *Copy* puts them on the clipboard as CSV, *Save CSV…* writes a file. They are kept in memory only: closing the app forgets them, nothing is written unless you save.
+- Always on top, full screen (`F11`, or the full-screen button; also *View → Toggle full screen* on macOS: figures, step and total only), the PC is kept from suspending while the app is open.
 - **Languages**: English (default), Italiano, Español. **Theme**: dark (default), light, follow the system.
 - **Backup** (Settings → Backup): export or import the MIDI mappings, the keys, the audio and timer settings, the programs, the colours, language and theme as `mictime-backup-YYYY-MM-DD.json`, with *Replace everything* or *Add only the missing*. The file holds no passwords or keys: the app uses none.
 - **Guided update**: a strip offers *Download and install*, *Remind me later*, *Skip this version* and the release notes; progress bar; the installer is checked against `SHA256SUMS.txt`; *Close and install* makes a safety copy of the settings first; *What's new* shows once after an update. Nothing is installed without a click.
@@ -50,11 +52,11 @@ Public releases are numbered `YY.M.N` (year, month, number: `26.10.1`). Betas ar
 
 Download the installer for your system from the [Releases](https://github.com/djgragra/mictime/releases) page and check it against `SHA256SUMS.txt`. Installers: `MicTime-Setup-<V>.exe`, `MicTime-<V>-arm64.dmg`, `MicTime-<V>-x64.dmg`, `MicTime-<V>.AppImage`.
 
-The app is free and **not code-signed**, so the first launch may show a warning:
+The app is free and has **no Apple or Microsoft certificate**, so the first launch may show a warning. On a Mac the app is signed ad hoc during the build (no account needed; the build checks the signature of the app inside each disk image), which is what Apple silicon needs to open it:
 
-- **macOS**: if you see "app is damaged" or "cannot be opened", right-click the app → *Open*, or run:
+- **macOS**: the first start shows the "unidentified developer" notice: *System Settings → Privacy & Security → Open Anyway*. If an earlier version (26.10.2 or older) says the app is "damaged" and will not open, run this once in Terminal:
   ```bash
-  xattr -dr com.apple.quarantine /Applications/MicTime.app
+  xattr -cr /Applications/MicTime.app && codesign --force --deep -s - /Applications/MicTime.app
   ```
 - **Windows**: if SmartScreen appears, click *More info* → *Run anyway*.
 - **Linux**: `chmod +x MicTime-*.AppImage`, then run it.
@@ -82,15 +84,17 @@ The app is free and **not code-signed**, so the first launch may show a warning:
 
 | Reference | What it validates | Result | How to re-run |
 |---|---|---|---|
-| Unit tests (`dev/*.test.mjs`) | message parsing, learn, matching, the toggle / separate / gate rules, keys, the audio gate, the timer (hold, debounce, reset), settings validation, programs and colours, the limit colours and the steps, backup, logs, support info, the guided update with a fake GitHub (hash mismatch, interrupted download, `.part` cleanup, safety copy), the three languages, packaging rules | 88 tests, all pass (Linux, Node 22) | `npm test` |
-| End-to-end run (`dev/e2e.mjs`) on the real app | start-up with ES modules, timer through the button, MIDI messages (injected into the real handler), learn, keys with the window in front, programs (steps, loop, free, debounce, remembered step), limit colours, the blinking and "reduce motion", "never reset", chosen colours, global shortcuts registered with the system (registration only), the audio gate with Chromium's fake audio device, settings tabs, language and theme | all checks pass on **Linux x64, Electron under Xvfb**. The packaged Linux build (`electron-builder --linux --dir`, code inside `app.asar`) was also started once and loaded its pages and modules | `npm ci && node dev/e2e.mjs` (needs `xvfb-run` or a display) |
+| Unit tests (`dev/*.test.mjs`) | message parsing, learn, matching, the toggle / separate / gate rules, keys, the audio gate, the timer (hold, debounce, reset), settings validation, programs and colours, the limit colours and the steps, backup, logs, support info, the speech log and its CSV, the ad-hoc signature hook, the clickable tip jar, the guided update with a fake GitHub (hash mismatch, interrupted download, `.part` cleanup, safety copy), the three languages, packaging rules | 96 tests, all pass (Linux, Node 22) | `npm test` |
+| End-to-end run (`dev/e2e.mjs`) on the real app | start-up with ES modules, timer through the button, MIDI messages (injected into the real handler), learn, keys with the window in front, programs (steps, loop, free, debounce, remembered step), limit colours, the blinking and "reduce motion", "never reset", chosen colours, global shortcuts registered with the system (registration only), the audio gate with Chromium's fake audio device, settings tabs, the speeches list, the compact view (window size, hidden controls, ways back), language and theme | all checks pass on **Linux x64, Electron under Xvfb**. The packaged Linux build (`electron-builder --linux --dir`, code inside `app.asar`) was also started once and loaded its pages and modules | `npm ci && node dev/e2e.mjs` (needs `xvfb-run` or a display) |
 
 ## Not validated
 
 - **Audio**: only Chromium's fake input device was used; no real microphone or sound card.
 - **Real MIDI equipment**: MIDI arrived from virtual ports on Windows (loopMIDI with VMPK and MIDI-OX) and on macOS Intel (IAC Driver with VMPK); a real console or controller was not used, and the input list on hot-plug is untested.
 - **Updates**: *Close and install* (does the new version start again after the installer on Windows, `runAfterFinish`? the disk image on macOS) can only be tried by updating from one release to the next (26.10.1 to 26.10.2 is the first chance), so it has not been tried.
-- **Systems**: macOS Apple silicon, the AppImage on a real Linux desktop, the microphone permission prompt on macOS.
+- **macOS Apple silicon**: the build signs the app ad hoc and checks it with `codesign --verify --deep --strict`, but opening the app on a real Apple silicon Mac was not tried from the cloud (the author tries the preview build there before release).
+- **Compact view**: *always on top* is not guaranteed by every Linux desktop (for example Wayland); not tried there.
+- **Systems**: the AppImage on a real Linux desktop, the microphone permission prompt on macOS.
 - **Global shortcuts**: tried on Windows only (a real key press with another program in front); not on macOS, Linux X11 or Wayland.
 - How the colours read on a studio screen **at a distance** is not judged.
 - The X32 and MB Studio connection examples (see `docs/MIDI-SPEC.md`).
@@ -119,9 +123,9 @@ Icons: `PLAYWRIGHT_MODULE=… CHROMIUM=… node dev/make-icons.mjs` (from `asset
 
 - `main.js`, `preload.cjs`: Electron main process (settings, global shortcuts, permissions, updates, backup) and the bridge.
 - `src/trigger/`: **the signal code, independent of Electron** (`midi.js`, `keys.js`, `level.js`, `stopwatch.js`), shared with other OnAir Garage apps (header `garage-common: trigger 2`).
-- `src/`: `limits.js` (colour states and the steps of a program), `schema.js` (settings), `backup.js`, `updater.js`, `logs.js`, `support.js`, `store.js`, `i18n.js`.
+- `src/`: `limits.js` (colour states and the steps of a program), `speeches.js` (the speech log and its CSV), `schema.js` (settings), `backup.js`, `updater.js`, `logs.js`, `support.js`, `store.js`, `i18n.js`.
 - `renderer/`: the interface (`signals.js` connects Web MIDI, keys and Web Audio to `src/trigger`).
-- `dev/`: tests, end-to-end run, screenshot and icon generators. `docs/`: manual, MIDI specification, screenshots.
+- `dev/`: tests, end-to-end run, screenshot and icon generators, `sign-adhoc.cjs` (the macOS ad-hoc signature, run by electron-builder after packing). `docs/`: manual, MIDI specification, screenshots.
 
 ## Credits
 
@@ -129,4 +133,4 @@ Electron (MIT), electron-store (MIT). System fonts only; no third-party content 
 
 ## In italiano
 
-**MicTime** è un cronometro per gli interventi in diretta (radio, eventi). Al primo segnale parte il conteggio, al successivo si ferma, il totale resta a schermo qualche secondo (configurabile, o finché non riparte) e poi il timer torna a zero. Con un **programma** (elenco di passi con tempo limite) ogni intervento ha il suo limite e il passo successivo si arma da solo; le cifre diventano gialle vicino al limite, rosse quando lo superi e lampeggiano lentamente se lo superi di molto. Il segnale può essere un **messaggio MIDI** (nota, controller o program change, con "impara"), un **tasto** (anche globale) o il **livello di un ingresso audio** (solo livello, niente registrazione). Due modalità: un solo segnale (avvia e ferma) o due segnali. Lingue: inglese, italiano, spagnolo. Backup delle impostazioni, aggiornamento guidato, nessun account né analisi. La specifica MIDI con gli esempi di collegamento è in [docs/MIDI-SPEC.md](docs/MIDI-SPEC.md). **Non ancora provato** su Windows, su Mac, con apparecchi MIDI veri e con un microfono vero: vedi "Not validated".
+**MicTime** è un cronometro per gli interventi in diretta (radio, eventi). Al primo segnale parte il conteggio, al successivo si ferma, il totale resta a schermo qualche secondo (configurabile, o finché non riparte) e poi il timer torna a zero. Con un **programma** (elenco di passi con tempo limite) ogni intervento ha il suo limite e il passo successivo si arma da solo; le cifre diventano gialle vicino al limite, rosse quando lo superi e lampeggiano lentamente se lo superi di molto. Il segnale può essere un **messaggio MIDI** (nota, controller o program change, con "impara"), un **tasto** (anche globale) o il **livello di un ingresso audio** (solo livello, niente registrazione). Due modalità: un solo segnale (avvia e ferma) o due segnali. Lingue: inglese, italiano, spagnolo. Backup delle impostazioni, aggiornamento guidato, nessun account né analisi. La specifica MIDI con gli esempi di collegamento è in [docs/MIDI-SPEC.md](docs/MIDI-SPEC.md). Dalla 26.10.3: **vista compatta** (finestra piccola sempre in primo piano con le sole cifre), elenco degli **interventi** della sessione (copia o CSV, solo in memoria) e app macOS firmata ad-hoc, come serve ai Mac Apple silicon. **Non ancora provato** con apparecchi MIDI veri e con un microfono vero: vedi "Not validated".

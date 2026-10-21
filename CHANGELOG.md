@@ -1,5 +1,13 @@
 # Changelog
 
+## 26.10.3 — 2026-10-21
+
+- **Fix: macOS on Apple Silicon said the app was "damaged".** The Apple Silicon build had a signature that was no longer valid (macOS: "code has no resources but signature indicates they must be present"), and recent macOS versions refuse such an app instead of offering to open it. The app is now signed ad hoc during the build (no Apple account is needed) and the build checks the signature of the app inside each disk image. The first start still shows the usual "unidentified developer" notice: *System Settings → Privacy & Security → Open Anyway*. If you already downloaded an earlier version and it will not open, run in Terminal: `xattr -cr "/Applications/MicTime.app" && codesign --force --deep -s - "/Applications/MicTime.app"`. Thanks to Rob, who reported it.
+- **Compact view.** A button next to full screen (on macOS also *View → Compact view*) shrinks the window to the figures only and keeps it on top of the other windows, to leave it in a corner of the screen. It remembers its own size and place. Double-click the figures, press `Esc` or use the small button in its corner to go back.
+- **Speeches.** A list button at the top right shows the last 20 speeches of the session with time, program and step, duration and limit; *Copy* and *Save CSV…* take them out. They are kept in memory only: nothing is written unless you save the file.
+- **The tip jar picture is a button too**, like the pill under it (Help & About).
+- Tests: 96 (new: the speech log and its CSV, the ad-hoc signature hook, the tip jar), and the end-to-end run on the real app now covers the speeches list and the compact view.
+
 ## 26.10.2 — 2026-10-17
 
 Maintenance release.

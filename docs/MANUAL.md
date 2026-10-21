@@ -13,7 +13,9 @@ control room.
   the previous step, the next step and *restart from the first step*. The figures change colour with the limit of the step (see *Programs*).
 - **START / STOP** (or **START** and **STOP**) and **RESET** do by hand what the signals do. The three small indicators at the top right say what
   each input is doing: **MIDI** (ready, no input, no access), **KEY** (global, window only), **AUDIO**.
-- **Full screen**: `F11`, the button at the top right, or a double-click on the figures; `Esc` leaves it. In full screen only the figures show.
+- **Full screen**: `F11`, the button at the top right, or a double-click on the figures; `Esc` leaves it. In full screen only the figures, the step and the total bar show.
+- **Compact view**: the button next to full screen (on macOS also *View → Compact view*). The window shrinks to the figures, stays on top of the other windows and remembers its own size and place; drag its edges to resize it (down to a small box). To go back: double-click the figures, press `Esc`, or use the small button that appears in its corner when the mouse is over the window. It is not remembered at the next start.
+- **Speeches** (the list button at the top right): the last 20 speeches of this session, newest first, with time, program and step, duration and limit (the duration is red when the limit was passed). *Copy* puts them on the clipboard as CSV, *Save CSV…* writes a file, *Clear* empties the list. They live in memory only: closing MicTime forgets them.
 - `S` opens the settings.
 
 ## Settings → General
@@ -103,7 +105,9 @@ The file holds no passwords or keys.
 ## Settings → Help & About
 
 Version, links, **Copy support info** (version, system, language, last update check, last error: never your settings), **Open logs
-folder** (daily files, 5 MB at most each, 7 days kept), the first-launch warnings and the credits.
+folder** (daily files, 5 MB at most each, 7 days kept), the first-launch warnings (on macOS: *Open Anyway*, and the Terminal command for an older version that says it is damaged) and the credits.
+
+The small tip card at the bottom has a button and a jar, both open the tip page of the site in your browser.
 
 ## Limits
 

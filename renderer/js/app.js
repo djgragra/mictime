@@ -88,6 +88,7 @@ function onAction(action, source) {
     if (before === 'running' && res.phase === 'holding') {
       // the speech ended: remember its step for the colour of the total, and arm the next step
       finished = { step: activeStep() };
+      GC.speeches.record({ ms: sw.snapshot(t).ms, program: p?.name || '', step: finished.step?.name || '', limitSec: finished.step?.sec || 0 });
       if (p) setIndex(p, advance(p, indexOf(p), s.programEnd));
     } else if (res.phase === 'running' || res.phase === 'idle') {
       finished = null;
@@ -103,6 +104,7 @@ function draw() {
   const text = formatDuration(snap.ms);
   if (text !== lastText) {
     $('digits').textContent = text;
+    document.body.classList.toggle('long', text.length > 5); // an hour or more: the compact view needs smaller figures
     lastText = text;
   }
   if (snap.phase === 'idle' && finished) finished = null; // the total went away by itself
@@ -257,6 +259,7 @@ async function init() {
   window.api.on.signal((d) => GC.signals.onGlobalSignal(d));
   window.api.on.keyStatus((st) => { GC.state.keyStatus = st; drawPills(); GC.settingsUi?.refresh?.(); });
   window.api.on.fullscreen((on) => document.body.classList.toggle('fullscreen', on));
+  window.api.on.compact((on) => document.body.classList.toggle('compact', on));
 
   $('btnStart').addEventListener('click', () => onAction(GC.state.settings.timer.mode === 'separate' ? 'start' : 'toggle', 'button'));
   $('btnStop').addEventListener('click', () => onAction('stop', 'button'));
@@ -266,7 +269,11 @@ async function init() {
   $('btnRestart').addEventListener('click', () => onAction('restart', 'button'));
   $('programSelect').addEventListener('change', (e) => { save({ activeProgram: e.target.value }); });
   $('btnFullscreen').addEventListener('click', () => window.api.window.toggleFullscreen());
-  $('digits').addEventListener('dblclick', () => window.api.window.toggleFullscreen());
+  $('btnCompact').addEventListener('click', () => window.api.window.setCompact(true));
+  $('btnCompactExit').addEventListener('click', () => window.api.window.setCompact(false));
+  $('btnSpeeches').addEventListener('click', () => GC.speeches.open());
+  // double-click: leave the compact view, otherwise toggle full screen
+  $('digits').addEventListener('dblclick', () => (document.body.classList.contains('compact') ? window.api.window.setCompact(false) : window.api.window.toggleFullscreen()));
   document.addEventListener('keydown', (e) => {
     if (e.target.matches?.('input, select, textarea')) return;
     if ((e.key === 's' || e.key === 'S') && !e.ctrlKey && !e.metaKey && !e.altKey && $('settings').hidden) GC.settingsUi.open();
