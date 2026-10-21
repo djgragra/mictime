@@ -4,6 +4,8 @@ import { getSettings } from './store.js';
 // Texts shown by the main process (file dialogs). The interface texts live in renderer/js/i18n.js.
 const TEXT = {
   exportTitle: { en: 'Export backup', it: 'Esporta backup', es: 'Exportar copia de seguridad' },
+  csvTitle: { en: 'Save the speeches', it: 'Salva gli interventi', es: 'Guardar las intervenciones' },
+  csvFilter: { en: 'Spreadsheet file (CSV)', it: 'File per fogli di calcolo (CSV)', es: 'Archivo de hoja de cálculo (CSV)' },
   importTitle: { en: 'Import backup', it: 'Importa backup', es: 'Importar copia de seguridad' },
   jsonFilter: { en: 'Backup file (JSON)', it: 'File di backup (JSON)', es: 'Archivo de copia de seguridad (JSON)' },
   importModeMessage: { en: 'How do you want to import this backup?', it: 'Come vuoi importare questo backup?', es: '¿Cómo quieres importar esta copia de seguridad?' },

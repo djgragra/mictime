@@ -6,7 +6,7 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { defaults, isAllowedExternal } from './src/schema.js';
 import {
-  getSettings, updateSettings, replaceSettings, getWindowBounds, setWindowBounds,
+  getSettings, updateSettings, replaceSettings, getWindowBounds, setWindowBounds, getCompactBounds, setCompactBounds,
   getUpdateState, setUpdateState, getLastSeenVersion, setLastSeenVersion, hadSettingsFile, settingsFile, getProgramIndex, setProgramIndex
 } from './src/store.js';
 import {
@@ -15,6 +15,7 @@ import {
 } from './src/updater.js';
 import { buildBackup, prepareImport, applyImport, backupFileName, MAX_BACKUP_BYTES } from './src/backup.js';
 import { createLogger } from './src/logs.js';
+import { csvFileName } from './src/speeches.js';
 import { buildSupportInfo } from './src/support.js';
 import { resolveLanguage, resolveLocale, T } from './src/i18n.js';
 import { globalAllowed, toElectron, normalizeAccelerator, BINDING_NAMES } from './src/trigger/index.js';
@@ -44,20 +45,48 @@ const send = (channel, data) => {
 
 // ---- window ----------------------------------------------------------------------------
 
-function initialBounds() {
-  const b = getWindowBounds();
+// The remembered place, if it is still on a screen; otherwise only the size.
+function visibleBounds(b) {
   const visible = b.x !== undefined && b.y !== undefined && screen.getAllDisplays().some((d) => {
     const w = d.workArea;
     return b.x < w.x + w.width - 40 && b.x + b.width > w.x + 40 && b.y < w.y + w.height - 40 && b.y + b.height > w.y + 40;
   });
   return visible ? b : { width: b.width, height: b.height };
 }
+const initialBounds = () => visibleBounds(getWindowBounds());
+
+// ---- compact view: a small always-on-top window with the figures only ----
+const COMPACT_MIN = { width: 160, height: 70 };
+const NORMAL_MIN = { width: 520, height: 320 };
+let compact = false;
+let normalBounds = null;
+
+function setCompact(on) {
+  if (!mainWindow || mainWindow.isDestroyed() || on === compact) return compact;
+  if (on) {
+    if (mainWindow.isFullScreen()) mainWindow.setFullScreen(false);
+    if (mainWindow.isMaximized()) mainWindow.unmaximize();
+    normalBounds = mainWindow.getBounds();
+    compact = true;
+    mainWindow.setMinimumSize(COMPACT_MIN.width, COMPACT_MIN.height);
+    const b = visibleBounds(getCompactBounds());
+    mainWindow.setBounds({ ...b, width: Math.max(COMPACT_MIN.width, b.width), height: Math.max(COMPACT_MIN.height, b.height) });
+  } else {
+    compact = false;
+    mainWindow.setMinimumSize(NORMAL_MIN.width, NORMAL_MIN.height);
+    if (normalBounds) mainWindow.setBounds(normalBounds);
+  }
+  applyWindowSettings(getSettings());
+  send('event:compact', compact);
+  logger.log('info', `compact view ${compact ? 'on' : 'off'}`, 'window');
+  return compact;
+}
 
 function createWindow() {
   mainWindow = new BrowserWindow({
     ...initialBounds(),
-    minWidth: 520,
-    minHeight: 320,
+    minWidth: NORMAL_MIN.width,
+    minHeight: NORMAL_MIN.height,
     show: false,
     title: 'MicTime',
     backgroundColor: '#0b0b0d',
@@ -82,7 +111,11 @@ function createWindow() {
     if (input.type !== 'keyDown') return;
     if (input.key === 'F11') {
       e.preventDefault();
+      if (compact) setCompact(false);
       mainWindow.setFullScreen(!mainWindow.isFullScreen());
+    } else if (input.key === 'Escape' && compact) {
+      e.preventDefault();
+      setCompact(false);
     } else if (input.key === 'Escape' && mainWindow.isFullScreen()) {
       e.preventDefault();
       mainWindow.setFullScreen(false);
@@ -98,7 +131,8 @@ function createWindow() {
   const persistBounds = () => {
     clearTimeout(boundsTimer);
     boundsTimer = setTimeout(() => {
-      if (mainWindow && !mainWindow.isDestroyed() && !mainWindow.isFullScreen() && !mainWindow.isMaximized()) setWindowBounds(mainWindow.getBounds());
+      if (!mainWindow || mainWindow.isDestroyed() || mainWindow.isFullScreen() || mainWindow.isMaximized()) return;
+      (compact ? setCompactBounds : setWindowBounds)(mainWindow.getBounds());
     }, 400);
   };
   mainWindow.on('resize', persistBounds);
@@ -136,7 +170,7 @@ function buildMenu() {
     Menu.buildFromTemplate([
       { role: 'appMenu' },
       { role: 'editMenu' },
-      { label: 'View', submenu: [{ role: 'togglefullscreen' }, { role: 'minimize' }] },
+      { label: 'View', submenu: [{ role: 'togglefullscreen' }, { label: 'Compact view', accelerator: 'CmdOrCtrl+Shift+C', click: () => setCompact(!compact) }, { role: 'minimize' }] },
       { role: 'windowMenu' }
     ])
   );
@@ -176,7 +210,7 @@ function applyKeys() {
 }
 
 function applyWindowSettings(s) {
-  if (mainWindow) mainWindow.setAlwaysOnTop(s.alwaysOnTop, 'floating');
+  if (mainWindow) mainWindow.setAlwaysOnTop(s.alwaysOnTop || compact, 'floating');
   // the PC must not sleep while MicTime waits for a signal on the air
   if (powerBlockerId === null || !powerSaveBlocker.isStarted(powerBlockerId)) powerBlockerId = powerSaveBlocker.start('prevent-app-suspension');
 }
@@ -294,7 +328,31 @@ handle('clipboard:write', (text) => {
   return { ok: true };
 });
 
+handle('window:set-compact', (on) => setCompact(!!on));
+
+handle('speeches:save', async (csv) => {
+  if (typeof csv !== 'string' || csv.length > 200_000) return { ok: false };
+  const res = await dialog.showSaveDialog(mainWindow, {
+    title: T('csvTitle'),
+    defaultPath: path.join(app.getPath('documents'), csvFileName()),
+    filters: [{ name: T('csvFilter'), extensions: ['csv'] }]
+  });
+  if (res.canceled || !res.filePath) return { ok: false, canceled: true };
+  try {
+    // written under a temporary name and renamed, so a failed write never leaves half a file
+    const tmp = `${res.filePath}.part`;
+    fs.writeFileSync(tmp, csv, 'utf-8');
+    fs.renameSync(tmp, res.filePath);
+    logger.log('info', 'speeches saved as CSV', 'speeches');
+    return { ok: true };
+  } catch (err) {
+    logger.log('error', `speeches CSV failed: ${err.code || err.message}`, 'speeches');
+    return { ok: false, error: err.message };
+  }
+});
+
 handle('window:toggle-fullscreen', () => {
+  if (compact) setCompact(false);
   mainWindow.setFullScreen(!mainWindow.isFullScreen());
   return mainWindow.isFullScreen();
 });

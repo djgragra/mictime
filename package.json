@@ -1,6 +1,6 @@
 {
   "name": "mictime",
-  "version": "26.10.2",
+  "version": "26.10.3",
   "description": "Talk timer for live radio: a signal (MIDI, key or audio level) starts the count, the next one stops it, the total stays on screen, then it returns to zero",
   "main": "main.js",
   "type": "module",
@@ -25,6 +25,7 @@
   "build": {
     "appId": "com.onairgarage.mictime",
     "productName": "MicTime",
+    "afterPack": "dev/sign-adhoc.cjs",
     "publish": null,
     "files": [
       "main.js",

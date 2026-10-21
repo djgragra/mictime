@@ -13,7 +13,9 @@
       <div class="brand"><img class="brand-mark" src="img/logo.svg" alt=""><span class="brand-name">MicTime</span></div>
       <div class="hsp"></div>
       <div id="pills" class="pills" role="status"></div>
+      <button id="btnSpeeches" class="hbtn" type="button" data-i18n-title="hdr.speeches"><span class="ic ic-list"></span></button>
       <button id="btnSettings" class="hbtn" type="button" data-i18n-title="hdr.settings"><span class="ic ic-gear"></span></button>
+      <button id="btnCompact" class="hbtn" type="button" data-i18n-title="hdr.compact"><span class="ic ic-compact"></span></button>
       <button id="btnFullscreen" class="hbtn" type="button" data-i18n-title="hdr.fullscreen"><span class="ic ic-full"></span></button>
     </header>
 
@@ -37,6 +39,7 @@
         <button id="btnReset" class="btn ghost" type="button" data-i18n="ctl.reset">RESET</button>
       </div>
       <div id="hint" class="hint" hidden data-i18n="hint.noSignal"></div>
+      <button id="btnCompactExit" class="compact-exit" type="button" data-i18n-title="cmp.exit">⤢</button>
     </main>
   </div>
 
@@ -48,6 +51,23 @@
       </div>
       <nav id="tabs" class="tabs" role="tablist"></nav>
       <div id="tabBody" class="tab-body"></div>
+    </div>
+  </div>
+
+  <div id="speeches" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="speechesTitle">
+    <div class="panel">
+      <div class="panel-head">
+        <h2 id="speechesTitle" data-i18n="sp.title">Speeches</h2>
+        <button id="btnCloseSpeeches" class="btn ghost compact" type="button" data-i18n="common.close">Close</button>
+      </div>
+      <p class="hint" data-i18n="sp.note"></p>
+      <div id="speechesBody" class="tab-body"></div>
+      <div class="row-start">
+        <button id="btnSpeechesCopy" class="btn compact" type="button" data-i18n="sp.copy">Copy</button>
+        <button id="btnSpeechesSave" class="btn compact" type="button" data-i18n="sp.save">Save CSV…</button>
+        <button id="btnSpeechesClear" class="btn ghost compact" type="button" data-i18n="sp.clear">Clear</button>
+        <span id="speechesMsg" class="msg" role="status"></span>
+      </div>
     </div>
   </div>
 
@@ -64,6 +84,7 @@
   <script src="js/updates.js"></script>
   <script type="module" src="js/signals.js"></script>
   <script type="module" src="js/settings.js"></script>
+  <script type="module" src="js/speeches.js"></script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>

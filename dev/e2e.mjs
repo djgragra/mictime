@@ -219,6 +219,42 @@ try {
   check("What's new: Esc closes it", await ev(`document.getElementById('whatsNew').hidden`));
   await send('Emulation.clearDeviceMetricsOverride');
 
+  // ---- speeches: the list of the last speeches of the session ----
+  await set({ timer: { mode: 'toggle', holdSeconds: 2, debounceMs: 0 } });
+  await ev(`GC.action('reset', 'e2e')`);
+  await ev(`document.getElementById('btnStart').click()`);
+  await sleep(1200);
+  await ev(`document.getElementById('btnStart').click()`);
+  await ev(`document.getElementById('btnSpeeches').click()`);
+  let sp = JSON.parse(await ev(`JSON.stringify({ open: !document.getElementById('speeches').hidden, rows: document.querySelectorAll('#speechesBody tbody tr').length, first: document.querySelector('#speechesBody tbody tr td.num')?.textContent })`));
+  check('speeches: the list opens and shows the stopped speech (00:01)', sp.open && sp.rows >= 1 && sp.first === '00:01', JSON.stringify(sp));
+  await ev(`document.getElementById('btnSpeechesCopy').click()`);
+  await sleep(200);
+  check('speeches: Copy answers "Copied."', (await ev(`document.getElementById('speechesMsg').textContent`)) === 'Copied.');
+  await ev(`document.getElementById('btnSpeechesClear').click()`);
+  check('speeches: Clear empties the list and disables the buttons', (await ev(`document.querySelectorAll('#speechesBody tbody tr').length`)) === 0 && (await ev(`document.getElementById('btnSpeechesSave').disabled`)));
+  await key('Escape', 'Escape');
+  check('speeches: Esc closes the list', await ev(`document.getElementById('speeches').hidden`));
+  await ev(`GC.action('reset', 'e2e')`);
+
+  // ---- compact view: small window, figures only, back with a double-click ----
+  const win = () => ev(`JSON.stringify({ compact: document.body.classList.contains('compact'), w: outerWidth, h: outerHeight, header: getComputedStyle(document.querySelector('header')).display, controls: getComputedStyle(document.getElementById('controls')).display, digits: document.getElementById('digits').getBoundingClientRect().width })`).then(JSON.parse);
+  const before = await win();
+  await ev(`document.getElementById('btnCompact').click()`);
+  await sleep(700);
+  let cv = await win();
+  check('compact: small window, header and buttons hidden, figures visible', cv.compact && cv.w < 520 && cv.header === 'none' && cv.controls === 'none' && cv.digits > 60, JSON.stringify(cv));
+  await ev(`document.getElementById('digits').dispatchEvent(new MouseEvent('dblclick', { bubbles: true }))`);
+  await sleep(700);
+  cv = await win();
+  check('compact: a double-click on the figures brings the full window back', !cv.compact && cv.w === before.w && cv.header !== 'none', JSON.stringify({ before, cv }));
+  await ev(`document.getElementById('btnCompact').click()`);
+  await sleep(500);
+  await ev(`document.getElementById('btnCompactExit').click()`);
+  await sleep(500);
+  cv = await win();
+  check('compact: the corner button also leaves it', !cv.compact && cv.w >= 520, JSON.stringify(cv));
+
   // ---- settings tabs draw without errors, in the standard order ----
   await ev(`GC.settingsUi.open()`);
   const tabs = JSON.parse(await ev(`JSON.stringify([...document.querySelectorAll('#tabs .tab-btn')].map((b) => b.textContent))`));

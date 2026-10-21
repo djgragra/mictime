@@ -17,7 +17,11 @@ contextBridge.exposeInMainWorld('api', {
     setProgramIndex: (id, index) => ipcRenderer.invoke('runtime:set', id, index)
   },
   clipboard: { write: (text) => ipcRenderer.invoke('clipboard:write', text) },
-  window: { toggleFullscreen: () => ipcRenderer.invoke('window:toggle-fullscreen') },
+  window: {
+    toggleFullscreen: () => ipcRenderer.invoke('window:toggle-fullscreen'),
+    setCompact: (on) => ipcRenderer.invoke('window:set-compact', !!on)
+  },
+  speeches: { saveCsv: (csv) => ipcRenderer.invoke('speeches:save', csv) },
   links: { open: (url) => ipcRenderer.invoke('links:open', url) },
   keys: {
     status: () => ipcRenderer.invoke('keys:status'),
@@ -44,6 +48,7 @@ contextBridge.exposeInMainWorld('api', {
     seen: () => ipcRenderer.invoke('whatsnew:seen')
   },
   on: {
+    compact: (cb) => ipcRenderer.on('event:compact', (_e, on) => cb(on)),
     fullscreen: (cb) => ipcRenderer.on('event:fullscreen', (_e, on) => cb(on)),
     signal: (cb) => ipcRenderer.on('event:signal', (_e, data) => cb(data)),
     keyStatus: (cb) => ipcRenderer.on('event:key-status', (_e, data) => cb(data)),

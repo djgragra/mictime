@@ -12,6 +12,8 @@ const store = new Store({
   defaults: {
     settings: defaults(),
     windowBounds: { width: 1100, height: 640 },
+    // the compact view remembers its own size and place, apart from the normal window
+    compactBounds: { width: 320, height: 140 },
     // kept apart from the settings on purpose: not part of a backup, not reset by an import
     updateState: { skipVersion: '', remindUntil: 0, lastCheck: null },
     lastSeenVersion: '',
@@ -37,6 +39,8 @@ export function replaceSettings(settings) {
 }
 export const getWindowBounds = () => store.get('windowBounds');
 export const setWindowBounds = (b) => store.set('windowBounds', { x: b.x, y: b.y, width: b.width, height: b.height });
+export const getCompactBounds = () => store.get('compactBounds');
+export const setCompactBounds = (b) => store.set('compactBounds', { x: b.x, y: b.y, width: b.width, height: b.height });
 export const getUpdateState = () => store.get('updateState');
 export function setUpdateState(patch) {
   store.set('updateState', { ...getUpdateState(), ...patch });
