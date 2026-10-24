@@ -16,7 +16,7 @@ SOURCES = {"en": "../MANUAL.md", "it": "../MANUAL.it.md", "es": "../MANUAL.es.md
 LINK_BASE = "https://github.com/djgragra/mictime/blob/main/docs/"
 VER = sys.argv[1] if len(sys.argv) > 1 else "0.0.0"
 HERE = os.path.dirname(os.path.abspath(__file__))
-OUT = sys.argv[2] if len(sys.argv) > 2 else HERE
+OUT = os.path.abspath(sys.argv[2] if len(sys.argv) > 2 else HERE)  # absolute: Chrome needs it for file:// and --print-to-pdf
 
 LABELS = {
     "en": dict(manual="User manual", version="Version", license="MIT License © 2026 Graziano Melzi", toc="Contents"),
