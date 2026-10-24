@@ -237,6 +237,36 @@ try {
   check('speeches: Esc closes the list', await ev(`document.getElementById('speeches').hidden`));
   await ev(`GC.action('reset', 'e2e')`);
 
+  // ---- alert when the limit is reached: once per speech, only when chosen; "figures only" in full screen ----
+  await ev(`window.__alerts = { beep: 0, flash: 0 }; GC.beep = () => { __alerts.beep++; }; GC.flashWindow = () => { __alerts.flash++; }; 1`);
+  const alerts = () => ev(`JSON.stringify(__alerts)`).then(JSON.parse);
+  await set({ activeProgram: '', timer: { mode: 'toggle', limitSeconds: 1, warnSeconds: 0, flashSeconds: 5, holdForever: false, holdSeconds: 2, debounceMs: 0, limitSound: false, limitFlash: false } });
+  await ev(`GC.action('reset', 'e2e'); document.getElementById('btnStart').click()`);
+  await sleep(1500);
+  check('limit alert: nothing happens while both options are off', JSON.stringify(await alerts()) === '{"beep":0,"flash":0}', JSON.stringify(await alerts()));
+  await ev(`document.getElementById('btnStart').click()`);
+  await set({ timer: { limitSound: true, limitFlash: true } });
+  await ev(`GC.action('reset', 'e2e'); document.getElementById('btnStart').click()`);
+  await sleep(800);
+  check('limit alert: not before the limit', JSON.stringify(await alerts()) === '{"beep":0,"flash":0}', JSON.stringify(await alerts()));
+  await sleep(1500);
+  check('limit alert: one beep and one flash once the limit is passed (not repeated)', JSON.stringify(await alerts()) === '{"beep":1,"flash":1}', JSON.stringify(await alerts()));
+  await ev(`document.getElementById('btnStart').click()`);
+  await ev(`GC.action('reset', 'e2e'); document.getElementById('btnStart').click()`);
+  await sleep(1500);
+  check('limit alert: fires again for the next speech', JSON.stringify(await alerts()) === '{"beep":2,"flash":2}', JSON.stringify(await alerts()));
+  await ev(`document.getElementById('btnStart').click(); GC.action('reset', 'e2e'); 1`);
+  await set({ timer: { limitSeconds: 0, limitSound: false, limitFlash: false }, activeProgram: '' });
+  await set({ activeProgram: '', figuresOnly: false });
+  const fsView = () => ev(`JSON.stringify({ step: getComputedStyle(document.getElementById('stepNext')).display, bar: getComputedStyle(document.querySelector('.hold-bar')).display })`).then(JSON.parse);
+  await ev(`document.body.classList.add('fullscreen')`);
+  check('full screen as before when "figures only" is off (total bar there)', (await fsView()).bar !== 'none', JSON.stringify(await fsView()));
+  await set({ figuresOnly: true });
+  check('"figures only": in full screen the step line and the total bar are hidden', (await fsView()).step === 'none' && (await fsView()).bar === 'none', JSON.stringify(await fsView()));
+  await ev(`document.body.classList.remove('fullscreen')`);
+  check('"figures only" does not change the normal window', (await fsView()).bar !== 'none', JSON.stringify(await fsView()));
+  await set({ figuresOnly: false });
+
   // ---- compact view: small window, figures only, back with a double-click ----
   const win = () => ev(`JSON.stringify({ compact: document.body.classList.contains('compact'), w: outerWidth, h: outerHeight, header: getComputedStyle(document.querySelector('header')).display, controls: getComputedStyle(document.getElementById('controls')).display, digits: document.getElementById('digits').getBoundingClientRect().width })`).then(JSON.parse);
   const before = await win();

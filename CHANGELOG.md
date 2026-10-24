@@ -1,5 +1,12 @@
 # Changelog
 
+## 26.10.4 — 2026-10-24
+
+- **Alert at the limit.** In *Settings → Programs* two new options, both off by default: **one short beep** and **one short flash of the window** the moment the limit of the step is reached, once for each speech. *Test* tries them. The beep comes out of the computer's default sound output: if that output feeds the mixer or the stream it can go on air, so the flash may be the better choice.
+- **Figures only in full screen** (*Settings → General*): hides the step line and the total bar too. Off by default.
+- **Manual as PDF** in English, Italian and Spanish, attached to every release.
+- Tests: 99 (new: the settings of the alert and of "figures only"), and the end-to-end run on the real app now covers both.
+
 ## 26.10.3 — 2026-10-21
 
 - **Fix: macOS on Apple Silicon said the app was "damaged".** The Apple Silicon build had a signature that was no longer valid (macOS: "code has no resources but signature indicates they must be present"), and recent macOS versions refuse such an app instead of offering to open it. The app is now signed ad hoc during the build (no Apple account is needed) and the build checks the signature of the app inside each disk image. The first start still shows the usual "unidentified developer" notice: *System Settings → Privacy & Security → Open Anyway*. If you already downloaded an earlier version and it will not open, run in Terminal: `xattr -cr "/Applications/MicTime.app" && codesign --force --deep -s - "/Applications/MicTime.app"`. Thanks to Rob, who reported it.

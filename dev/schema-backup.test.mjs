@@ -19,6 +19,21 @@ const sample = () => sanitizeSettings({
 });
 
 // ---- settings ----
+test('limit alert and "figures only": off by default, plain booleans, kept by the backup', () => {
+  const d = defaults();
+  assert.equal(d.figuresOnly, false);
+  assert.equal(d.timer.limitSound, false);
+  assert.equal(d.timer.limitFlash, false);
+  const s = sanitizeSettings({ figuresOnly: true, timer: { limitSound: true, limitFlash: 'yes' } });
+  assert.equal(s.figuresOnly, true);
+  assert.equal(s.timer.limitSound, true);
+  assert.equal(s.timer.limitFlash, false, 'not a boolean: ignored');
+  const back = parseImport(JSON.parse(JSON.stringify({ app: 'mictime', settings: s })));
+  assert.equal(back.figuresOnly, true);
+  assert.equal(back.timer.limitSound, true);
+  assert.equal(sanitizeSettings({ language: 'it' }).timer.limitSound, false, 'an old backup without the new keys keeps the defaults');
+});
+
 test('defaults: English, dark, toggle mode, 5 s, nothing assigned, audio off', () => {
   const d = defaults();
   assert.equal(d.language, 'en');

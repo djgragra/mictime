@@ -53,6 +53,7 @@ export function defaults() {
     theme: 'dark', // dark | light | system
     alwaysOnTop: false,
     checkUpdates: true,
+    figuresOnly: false, // full screen shows the figures only (no step line, no total bar)
     timer: {
       mode: 'toggle', // toggle: one signal starts and the next stops | separate: start and stop are different signals
       holdSeconds: 5, // the total stays on screen this long, then back to zero
@@ -60,7 +61,9 @@ export function defaults() {
       limitSeconds: 0, // the time limit when no program is active (a program has a limit for each step); 0 = no limit
       debounceMs: 300, // a second start/stop within this time is taken as the same press
       warnSeconds: 10, // the figures turn to the warning colour this many seconds before the limit
-      flashSeconds: 10 // and blink slowly when the limit is passed by this many seconds
+      flashSeconds: 10, // and blink slowly when the limit is passed by this many seconds
+      limitSound: false, // one short beep when the limit is reached (off: the computer's sound may be on air)
+      limitFlash: false // and one short flash of the window at that moment
     },
     // Colours of the figures: '#rrggbb', or '' for the default of the theme.
     colors: { normal: '', warn: '', over: '', idle: '' },
@@ -133,6 +136,7 @@ export function sanitizeSettings(input, base = defaults()) {
     theme: oneOf(i.theme ?? b.theme, ['dark', 'light', 'system'], 'dark'),
     alwaysOnTop: bool(i.alwaysOnTop, bool(b.alwaysOnTop, false)),
     checkUpdates: bool(i.checkUpdates, bool(b.checkUpdates, true)),
+    figuresOnly: bool(i.figuresOnly, bool(b.figuresOnly, false)),
     timer: {
       mode: oneOf(t.mode, ['toggle', 'separate'], 'toggle'),
       holdSeconds: clampInt(t.holdSeconds, LIMITS.holdSeconds, def.timer.holdSeconds),
@@ -140,7 +144,9 @@ export function sanitizeSettings(input, base = defaults()) {
       limitSeconds: clampInt(t.limitSeconds, LIMITS.limitSeconds, 0),
       debounceMs: clampInt(t.debounceMs, LIMITS.debounceMs, def.timer.debounceMs),
       warnSeconds: clampInt(t.warnSeconds, LIMITS.warnSeconds, def.timer.warnSeconds),
-      flashSeconds: clampInt(t.flashSeconds, LIMITS.flashSeconds, def.timer.flashSeconds)
+      flashSeconds: clampInt(t.flashSeconds, LIMITS.flashSeconds, def.timer.flashSeconds),
+      limitSound: bool(t.limitSound, false),
+      limitFlash: bool(t.limitFlash, false)
     },
     colors: { normal: hexColor(col.normal), warn: hexColor(col.warn), over: hexColor(col.over), idle: hexColor(col.idle) },
     programs,

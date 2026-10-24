@@ -30,6 +30,7 @@ L'app è gratuita e non ha un certificato Apple o Microsoft, quindi al primo avv
 - **Mostra il totale per**: quanti secondi il totale resta a schermo dopo uno stop (1–600, predefinito 5). Con **Non azzerare mai** il totale resta fino al successivo segnale di avvio o a un reset.
 - **Ignora un segnale ripetuto entro**: alcune console mandano due messaggi per una pressione; due segnali di start/stop più vicini di questi millisecondi contano come uno (predefinito 300; il reset non viene mai ignorato).
 - **Sempre in primo piano**.
+- **Solo cifre a tutto schermo**: a tutto schermo si nascondono anche la riga del passo e la barra del totale, restano solo le cifre (spento di default).
 
 ## Impostazioni → Programmi
 
@@ -44,6 +45,10 @@ L'app è gratuita e non ha un certificato Apple o Microsoft, quindi al primo avv
 - Le cifre sono **grigie** a zero, del colore **in corso** durante il conteggio, del colore di **avviso** da *N secondi prima del limite* (predefinito 10), del colore **limite superato** (rosso) quando il limite è superato, e **lampeggiano lentamente** (circa una volta al secondo) quando è superato di *M secondi* (predefinito 10). Il totale tiene il colore che aveva allo stop e non lampeggia mai. Un passo senza limite non cambia mai colore.
 - Con *riduci animazioni* attivo nel sistema non c'è lampeggio: si vede invece una cornice rossa fissa.
 - Ognuno dei quattro colori si può scegliere; *Predefinito* torna al colore del tema.
+
+**Avviso al limite** (stessa scheda, entrambe le opzioni spente di default)
+- **Un breve beep** e/o **un breve lampo della finestra** nel momento in cui si raggiunge il limite di tempo del passo, una volta per speech. *Prova* li esegue. Con *riduci animazioni* attivo nel sistema il lampo non si vede.
+- **Attenzione al beep**: esce dall'uscita audio predefinita del computer. Se quell'uscita arriva al mixer o allo streaming, il beep può andare in onda: usa il lampo, oppure manda l'audio del computer solo a un monitor.
 
 ## Impostazioni → Segnali
 

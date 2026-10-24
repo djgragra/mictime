@@ -30,6 +30,7 @@ La app es gratuita y no tiene certificado de Apple ni de Microsoft, así que en 
 - **Mostrar el total durante**: cuántos segundos se queda el total en pantalla tras una parada (1–600, por defecto 5). Con **No poner a cero nunca**, el total se queda hasta la siguiente señal de inicio o hasta un reinicio.
 - **Ignorar una señal repetida en menos de**: algunas consolas envían dos mensajes por una pulsación; dos señales de inicio/parada más cercanas que estos milisegundos cuentan como una (por defecto 300; el reinicio nunca se ignora).
 - **Siempre encima**.
+- **Solo cifras a pantalla completa**: a pantalla completa se ocultan también la línea del paso y la barra del total, solo quedan las cifras (desactivado por defecto).
 
 ## Ajustes → Programas
 
@@ -44,6 +45,10 @@ La app es gratuita y no tiene certificado de Apple ni de Microsoft, así que en 
 - Las cifras son **grises** a cero, del color **contando** mientras cuenta, del color de **aviso** desde *N segundos antes del límite* (por defecto 10), del color **límite superado** (rojo) una vez superado el límite, y **parpadean lentamente** (más o menos una vez por segundo) cuando se supera en *M segundos* (por defecto 10). El total conserva el color que tenía en la parada y nunca parpadea. Un paso sin límite nunca cambia de color.
 - Con *reducir animaciones* activado en el sistema no hay parpadeo: se muestra en su lugar un marco rojo fijo.
 - Cada uno de los cuatro colores se puede elegir; *Por defecto* vuelve al color del tema.
+
+**Aviso al llegar al límite** (misma pestaña, ambas opciones desactivadas por defecto)
+- **Un pitido corto** y/o **un destello corto de la ventana** en el momento en que se alcanza el límite de tiempo del paso, una vez por intervención. *Probar* los reproduce. Con *reducir animaciones* activado en el sistema el destello no se muestra.
+- **Cuidado con el pitido**: sale por la salida de audio predeterminada del equipo. Si esa salida va a la mesa o al streaming, el pitido puede salir al aire: usa el destello, o envía el audio del equipo solo a un monitor.
 
 ## Ajustes → Señales
 
