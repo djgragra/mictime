@@ -11,7 +11,7 @@ By Graziano Melzi · [OnAir Garage](https://onairgarage.com) — contact: hello@
 - Tool page: https://onairgarage.com/tools/mictime/
 - Author: Graziano Melzi · OnAir Garage · hello@onairgarage.com
 - License: MIT (see `LICENSE`)
-- Manual: [docs/MANUAL.md](docs/MANUAL.md) · MIDI specification: [docs/MIDI-SPEC.md](docs/MIDI-SPEC.md)
+- Manual: [docs/MANUAL.md](docs/MANUAL.md) (English; [italiano](docs/MANUAL.it.md), [español](docs/MANUAL.es.md); PDF of the three languages attached to every release) · MIDI specification: [docs/MIDI-SPEC.md](docs/MIDI-SPEC.md)
 - Systems: Windows, macOS (Intel and Apple silicon), Linux (AppImage, x64). **What has been run:** the unit tests and an end-to-end run of the real app (Electron under Xvfb) on Linux x64; on **Windows** the installer, MIDI from virtual ports (loopMIDI, VMPK, MIDI-OX), a global shortcut with another program in front, programs, colours and blinking, all tried by the author on a real screen; on **macOS (Intel)** the app and MIDI from the IAC Driver with VMPK, tried by the author. Not yet run on macOS Apple silicon, on a real Linux desktop, with a real mixer or a real microphone (see "Not validated").
 
 ## What it does

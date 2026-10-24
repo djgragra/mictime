@@ -4,6 +4,16 @@ MicTime is a talk timer. A **signal** starts the count, the **next signal** stop
 the timer returns to zero. It is made for live radio (how long did that intervention last?), but works for talks, panels and any
 control room.
 
+## Install and first launch
+
+Download the installer for your system from the [Releases](https://github.com/djgragra/mictime/releases) page and check it against `SHA256SUMS.txt`:
+`MicTime-Setup-<V>.exe` (Windows), `MicTime-<V>-arm64.dmg` (Mac with Apple silicon), `MicTime-<V>-x64.dmg` (Mac with Intel), `MicTime-<V>.AppImage` (Linux).
+The app is free and has no Apple or Microsoft certificate, so the first launch may show a warning.
+
+- **macOS**: the app is signed ad hoc, which is what an Apple silicon Mac needs to open it. The first start still shows the "unidentified developer" notice: open *System Settings → Privacy & Security* and click *Open Anyway* (right-click → Open no longer exists on macOS 15 and later). If an earlier version (26.10.2 or older) says the app is "damaged", run this once in Terminal: `xattr -cr /Applications/MicTime.app && codesign --force --deep -s - /Applications/MicTime.app`
+- **Windows**: if SmartScreen appears, click *More info* → *Run anyway*.
+- **Linux**: `chmod +x MicTime-*.AppImage`, then run it.
+
 ## The screen
 
 - The big figures show minutes and seconds (`mm:ss`; `h:mm:ss` from one hour).
