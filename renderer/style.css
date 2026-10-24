@@ -61,6 +61,13 @@ body.phase-running.lim-flash .digits { animation: pulse 1s ease-in-out infinite;
 .stage > .hint { max-width: 40em; text-align: center; margin-top: 1vh; }
 body.fullscreen header, body.fullscreen .controls, body.fullscreen .stage > .hint, body.fullscreen .update-banner { display: none !important; }
 body.fullscreen .root { grid-template-rows: 1fr; }
+/* "figures only" (Settings → General): in full screen nothing but the figures and the state */
+body.fullscreen.figures-only .stepbar, body.fullscreen.figures-only .step-next, body.fullscreen.figures-only .hold-bar { display: none !important; }
+/* one short flash of the window when the limit is reached (Settings → Programs) */
+.limit-flash { position: fixed; inset: 0; pointer-events: none; z-index: 20; background: var(--c-over); opacity: 0; }
+.limit-flash.on { animation: limit-flash 0.6s ease-out; }
+@keyframes limit-flash { 0% { opacity: 0.55; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .limit-flash.on { animation: none; opacity: 0; box-shadow: none; } }
 /* compact view: a small window with the figures only; double-click, Esc or the corner button bring the full window back */
 .compact-exit { display: none; }
 body.compact header, body.compact .controls, body.compact .stage > .hint, body.compact .update-banner, body.compact .state-label, body.compact .stepbar, body.compact .step-next { display: none !important; }

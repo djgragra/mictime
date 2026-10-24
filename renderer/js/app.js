@@ -13,6 +13,7 @@ let lastPhase = 'idle';
 let lastText = '';
 let lastLimitClass = '';
 let lastStepKey = '';
+let limitAlerted = false; // the limit alert fires once for each speech
 
 // ---- programs: the step each program is at, and the speech that just ended ----
 let programIndex = {}; // { programId: index }, remembered by the main process
@@ -47,6 +48,7 @@ function applySettings(s) {
     else root.style.removeProperty(`--c-${k}`);
   }
   sw.configure({ holdMs: s.timer.holdForever ? Infinity : s.timer.holdSeconds * 1000, debounceMs: s.timer.debounceMs });
+  document.body.classList.toggle('figures-only', !!s.figuresOnly);
   fillProgramSelect();
   lastStepKey = '';
   const separate = s.timer.mode === 'separate';
@@ -98,9 +100,46 @@ function onAction(action, source) {
   draw();
 }
 
+// ---- alert when the limit is reached: one short beep and/or one flash, each off by default ----
+let audioCtx = null;
+GC.beep = () => {
+  try {
+    audioCtx = audioCtx || new AudioContext();
+    audioCtx.resume?.();
+    const t0 = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.25, t0 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.35);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + 0.4);
+  } catch (e) { window.api.app.log('warn', `beep failed: ${e?.message || e}`); }
+};
+GC.flashWindow = () => {
+  const el = $('limitFlash');
+  el.classList.remove('on');
+  void el.offsetWidth; // restart the animation
+  el.classList.add('on');
+};
+function limitReached() {
+  const t = GC.state.settings.timer;
+  window.api.app.log('info', 'limit reached');
+  if (t.limitSound) GC.beep();
+  if (t.limitFlash) GC.flashWindow();
+}
+
 // ---- drawing ----
 function draw() {
   const snap = sw.snapshot(now());
+  if (snap.phase !== 'running') limitAlerted = false;
+  else if (!limitAlerted) {
+    const sec = activeStep()?.sec || 0;
+    if (sec > 0 && snap.ms >= sec * 1000) { limitAlerted = true; limitReached(); }
+  }
   const text = formatDuration(snap.ms);
   if (text !== lastText) {
     $('digits').textContent = text;

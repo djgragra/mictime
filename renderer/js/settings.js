@@ -37,6 +37,7 @@ function general() {
       row(t('gen.debounce'), number(s.timer.debounceMs, 0, 2000, 50, (n) => save({ timer: { debounceMs: n } })), t('gen.debounceHint'))
     ),
     check(t('gen.onTop'), s.alwaysOnTop, (v) => save({ alwaysOnTop: v })),
+    check(t('gen.figuresOnly'), s.figuresOnly, (v) => save({ figuresOnly: v }), t('gen.figuresOnlyHint')),
     h('div', { class: 'row-start' }, btn('gen.reset', async () => { const r = await window.api.settings.reset(); if (r.ok) { GC.adopt(r); draw(); } }))
   );
   return box;
@@ -292,7 +293,13 @@ function programsTab() {
         h('input', { type: 'color', value: s.colors[k] || DEFAULT_HEX[k], title: t(`col.${k}`), onchange: (e) => save({ colors: { [k]: e.target.value } }) }),
         btn('col.default', () => save({ colors: { [k]: '' } }), 'ghost', { disabled: !s.colors[k] }),
         h('span', { class: 'swatch', text: '01:30', style: undefined, dataset: { k } }))),
-      h('p', { class: 'hint', text: t('col.hint') }))
+      h('p', { class: 'hint', text: t('col.hint') })),
+    card(t('alert.title'),
+      h('p', { class: 'hint', text: t('alert.intro') }),
+      check(t('alert.sound'), s.timer.limitSound, (v) => save({ timer: { limitSound: v } })),
+      check(t('alert.flash'), s.timer.limitFlash, (v) => save({ timer: { limitFlash: v } })),
+      h('div', { class: 'row-start' }, btn('alert.test', () => { GC.beep(); GC.flashWindow(); })),
+      h('p', { class: 'hint', text: t('alert.onAir') }))
   );
   // swatches take their colour from the same variables as the figures (set through the style object, which the CSP allows)
   for (const sw of box.querySelectorAll('.swatch')) sw.style.color = s.colors[sw.dataset.k] || DEFAULT_HEX[sw.dataset.k];

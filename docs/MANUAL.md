@@ -37,6 +37,7 @@ The app is free and has no Apple or Microsoft certificate, so the first launch m
 - **Ignore a repeated signal within**: some consoles send two messages for one press; two start/stop signals closer than this many
   milliseconds count as one (default 300; reset is never ignored).
 - **Always on top**.
+- **Figures only in full screen**: in full screen the step line and the total bar are hidden too, only the figures stay (off by default).
 
 ## Settings → Programs
 
@@ -58,6 +59,10 @@ warning and blinking as the steps of a program, and the line under the figures s
   the colour it had at the stop and never blinks. A step with no limit never changes colour.
 - With *reduce motion* on in the system there is no blinking: a steady red frame is shown instead.
 - Each of the four colours can be chosen; *Default* goes back to the colour of the theme.
+
+**Alert at the limit** (same tab, both options off by default)
+- **One short beep** and/or **one short flash of the window** the moment the time limit of the step is reached, once for each speech. *Test* plays them. With *reduce motion* on in the system the flash is not shown.
+- **Careful with the beep**: it comes out of the computer's default sound output. If that output feeds the mixer or the stream, the beep can go on air: use the flash, or send the computer's sound to a monitor only.
 
 ## Settings → Signals
 
