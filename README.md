@@ -49,6 +49,8 @@ MicTime contacts only `api.github.com` / `github.com`, to check for a new releas
 
 Public releases are numbered `YY.M.N` (year, month, number: `26.10.1`). Betas are `0.N.P` (`0.1.0`, `0.2.0`…) and are published as GitHub pre-releases, so the update check never offers them; any public release is newer than every beta.
 
+<a href="https://ko-fi.com/F8V328ADFH"><img height="36" src="https://storage.ko-fi.com/cdn/kofi6.png?v=6" alt="Buy Me a Coffee at ko-fi.com"></a>
+
 ## Install
 
 Download the installer for your system from the [Releases](https://github.com/djgragra/mictime/releases) page and check it against `SHA256SUMS.txt`. Installers: `MicTime-Setup-<V>.exe`, `MicTime-<V>-arm64.dmg`, `MicTime-<V>-x64.dmg`, `MicTime-<V>.AppImage`.
@@ -136,3 +138,11 @@ Electron (MIT), electron-store (MIT). System fonts only; no third-party content 
 ## In italiano
 
 **MicTime** è un cronometro per gli interventi in diretta (radio, eventi). Al primo segnale parte il conteggio, al successivo si ferma, il totale resta a schermo qualche secondo (configurabile, o finché non riparte) e poi il timer torna a zero. Con un **programma** (elenco di passi con tempo limite) ogni intervento ha il suo limite e il passo successivo si arma da solo; le cifre diventano gialle vicino al limite, rosse quando lo superi e lampeggiano lentamente se lo superi di molto. Il segnale può essere un **messaggio MIDI** (nota, controller o program change, con "impara"), un **tasto** (anche globale) o il **livello di un ingresso audio** (solo livello, niente registrazione). Due modalità: un solo segnale (avvia e ferma) o due segnali. Lingue: inglese, italiano, spagnolo. Backup delle impostazioni, aggiornamento guidato, nessun account né analisi. La specifica MIDI con gli esempi di collegamento è in [docs/MIDI-SPEC.md](docs/MIDI-SPEC.md). Dalla 26.10.4: **avviso al limite** (beep e/o lampo, spenti di default) e **solo cifre** a schermo intero. Dalla 26.10.3: **vista compatta** (finestra piccola sempre in primo piano con le sole cifre), elenco degli **interventi** della sessione (copia o CSV, solo in memoria) e app macOS firmata ad-hoc, come serve ai Mac Apple silicon. **Non ancora provato** con apparecchi MIDI veri e con un microfono vero: vedi "Not validated".
+
+## Support
+
+This tool is free and will stay free, with source code. If it saved your day, you can leave a tip on Ko-fi: a thank-you, nothing more.
+
+<a href="https://ko-fi.com/F8V328ADFH"><img height="36" src="https://storage.ko-fi.com/cdn/kofi6.png?v=6" alt="Buy Me a Coffee at ko-fi.com"></a>
+
+*Italiano:* lo strumento è gratuito e resta tale, con il codice sorgente. Se ti ha salvato la giornata puoi lasciare una mancia su Ko-fi: un grazie e basta.
